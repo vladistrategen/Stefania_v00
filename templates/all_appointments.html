@@ -1,0 +1,13 @@
+<h1>
+    Dr.{{doctor.first_name}} {{doctor.last_name}}'s Appointments:
+</h1>
+<h2>
+    <ul>
+        {% for appopintment in appointment_list %}
+        <li>
+            {{appopintment.patient}} on {{appopintment.date}} at {{appopintment.time}}
+            
+        </li>
+        {% endfor %}
+    </ul>
+</h2>

@@ -1,0 +1,10 @@
+<h1>
+    <ul>
+        {% for patient in patient_list %}
+        <li>
+            {{patient.first_name}} {{patient.last_name}} {{patient.email}}
+            
+        </li>
+        {% endfor %}
+    </ul>
+</h1>
