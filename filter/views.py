@@ -9,7 +9,7 @@ from patient.models import Patient
 
 class filter_by_date_view(ListView):
     def get(self, request):
-        pass
+        pass #plm
         #TODO: implement
         """desired_date=request.GET.get('date')
         patient_list=Patient.objects.filter(date=desired_date)
