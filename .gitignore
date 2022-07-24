@@ -1,0 +1,5 @@
+Pipfile
+Pipfile.lock
+stf.session.sql
+.vscode
+__pycache__/

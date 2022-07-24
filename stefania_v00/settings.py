@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'patient',
+    #'homepage',
+    'frontend',
     'doctors',
     'appointment',
     'filter',
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -57,12 +60,14 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
+
+
 ROOT_URLCONF = 'stefania_v00.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),os.path.join(BASE_DIR, 'frontend', 'build')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),os.path.join(BASE_DIR, 'frontend','build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,7 +89,7 @@ WSGI_APPLICATION = 'stefania_v00.wsgi.application'
 DATABASES = {  
         'default': {  
             'ENGINE': 'django.db.backends.mysql',  
-            'NAME': 'stefania_v00',  
+            'NAME': 'stefania_app',  
             'USER': 'root',  
             'PASSWORD': 'naruto53',  
             'HOST': '127.0.0.1',  

@@ -8,7 +8,7 @@
             "server": "localhost",
             "port": 3306,
             "driver": "MySQL",
-            "database": "stefania_v00",
+            "database": "stefania_app",
             "username": "root",
             "password": "naruto53",
             "name": "stf"
