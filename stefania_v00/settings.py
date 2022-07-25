@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'stefania_v00.wsgi.application'
 DATABASES = {  
         'default': {  
             'ENGINE': 'django.db.backends.mysql',  
-            'NAME': 'stefania_app',  
+            'NAME': 'stefania_v00',  
             'USER': 'root',  
             'PASSWORD': 'naruto53',  
             'HOST': '127.0.0.1',  
@@ -130,7 +130,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
