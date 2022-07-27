@@ -52,6 +52,7 @@ class AppointmentDetail(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
 # api for getting filtered appointments by doctor
 class AppointmentFilterByDoctor(APIView):
     def get_object(self, pk):
@@ -109,6 +110,40 @@ class AppointmentFilterByDate(APIView):
     def put(self, request, date):
         desired_date = datetime.strptime(date, '%Y-%m-%d').date()
         appointments = Appointment.objects.filter(date=desired_date)
+        serializer = AppointmentSerializer(appointments, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+class AppointmentFilterByDateAndDoctor(APIView):
+    def get_object(self, pk):
+        try:
+            return Appointment.objects.get(id=pk)
+        except Appointment.DoesNotExist:
+            return Http404
+    
+    def get(self, request, date, doctor_id):
+        to_str=date.strftime('%Y-%m-%d')
+        desired_date = datetime.strptime(to_str, '%Y-%m-%d').date()
+        desired_doctor = Doctor.objects.get(id=doctor_id)
+        appointments = Appointment.objects.filter(date__lte=desired_date, doctor=desired_doctor)
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, date, doctor_id):
+        desired_date = datetime.strptime(date, '%Y-%m-%d').date()
+        desired_doctor = Doctor.objects.get(id=doctor_id)
+        serializer = AppointmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+    def put(self, request, date, doctor_id):
+        desired_date = datetime.strptime(date, '%Y-%m-%d').date()
+        desired_doctor = Doctor.objects.get(id=doctor_id)
+        appointments = Appointment.objects.filter(date=desired_date, doctor=desired_doctor)
         serializer = AppointmentSerializer(appointments, data=request.data)
         if serializer.is_valid():
             serializer.save()

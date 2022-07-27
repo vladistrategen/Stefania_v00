@@ -23,6 +23,7 @@ urlpatterns=[
     #path("appointments/filter_by_date/<str:date>/", views.AppointmentFilterByDate.as_view(), name="filter_by_date"),
     #make a path that will be used to filter by date
     path("appointments/filter_by_date/<yyyy:date>/", views.AppointmentFilterByDate.as_view(), name="filter_by_date"),
+    path("appointments/filter_by_date_and_doctor/<yyyy:date>/<int:doctor_id>/", views.AppointmentFilterByDateAndDoctor.as_view(), name="filter_by_date_and_doctor"),
     path("doctors/", views.DoctorView.as_view(), name="doctor"),
     path("doctors/<int:pk>/", views.DoctorDetail.as_view(), name="doctor-detail"),
     path("patients/", views.PatientView.as_view(), name="patient"),
