@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
@@ -33,14 +33,14 @@ class AppointmentView(AppointmentList):
         appointments = Appointment.objects.all()
         serializer = AppointmentSerializer(appointments, many=True)
         if not self.is_authenticated(request):
-            return render(request, 'login.html')
+            return redirect('/users/login')
         return Response(serializer.data)
 
 
     def post(self, request):
         serializer = AppointmentSerializer(data=request.data)
         if not self.is_authenticated(request):
-            return render(request, 'login.html')
+            return redirect(request, '/users/login')
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
@@ -65,7 +65,7 @@ class AppointmentDetail(AppointmentList):
         appointment = self.get_object(pk)
         serializer = AppointmentSerializer(appointment)
         if not self.is_authenticated(request):
-            return render(request, 'login.html')
+            return redirect( 'users/login/')
         return Response(serializer.data)
     
     def put(self, request, pk):
