@@ -7,7 +7,7 @@ from django.views import View
 
 class login_view(View):
     def get(self,request):
-        return render(request,'users/login.html')
+        return render(request,'login.html')
     def post(self,request):
         username=request.POST.get('username')
         password=request.POST.get('password')
@@ -17,4 +17,4 @@ class login_view(View):
             return redirect('/')
         else:
             messages.error(request,'Invalid username or password')
-            return redirect('/login')
+            return redirect('login.html')
