@@ -3,3 +3,4 @@ Pipfile.lock
 stf.session.sql
 .vscode
 **/__pycache__/
+**/migrations/__pycache__
