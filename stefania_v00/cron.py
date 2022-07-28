@@ -8,3 +8,6 @@ def execute_every_minute():
     f.close()
     print('cron job executed')
     return 'cron job executed'
+
+
+

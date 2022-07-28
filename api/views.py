@@ -11,15 +11,36 @@ import logging
 # Create your views here.
 
 from .serializers import AppointmentSerializer, DoctorSerializer, PatientSerializer
+
+class AppointmentList(APIView):
+    # check if the user is authenticated
+    
+    def is_authenticated(self, request):
+        if not request.user.is_authenticated:
+            return False
+        return True
+
+
+
+
+
+
+
+
 # api for getting all appointments
-class AppointmentView(APIView):
+class AppointmentView(AppointmentList):
     def get(self, request):
         appointments = Appointment.objects.all()
         serializer = AppointmentSerializer(appointments, many=True)
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
         return Response(serializer.data)
+
 
     def post(self, request):
         serializer = AppointmentSerializer(data=request.data)
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
@@ -33,7 +54,7 @@ class AppointmentView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 # api for getting detailed appointment
-class AppointmentDetail(APIView):
+class AppointmentDetail(AppointmentList):
     def get_object(self, pk):
         try:
             return Appointment.objects.get(id=pk)
@@ -43,6 +64,8 @@ class AppointmentDetail(APIView):
     def get(self, request, pk):
         appointment = self.get_object(pk)
         serializer = AppointmentSerializer(appointment)
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
         return Response(serializer.data)
     
     def put(self, request, pk):
@@ -50,11 +73,13 @@ class AppointmentDetail(APIView):
         serializer = AppointmentSerializer(appointment, data=request.data)
         if serializer.is_valid():
             serializer.save()
+            if not self.is_authenticated(request):
+                return render(request, 'login.html')
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
 # api for getting filtered appointments by doctor
-class AppointmentFilterByDoctor(APIView):
+class AppointmentFilterByDoctor(AppointmentList):
     def get_object(self, pk):
         try:
             return Doctor.objects.get(id=pk)
@@ -65,6 +90,8 @@ class AppointmentFilterByDoctor(APIView):
         desired_doctor = self.get_object(doctor_id)
         appointments = Appointment.objects.filter(doctor=desired_doctor)
         serializer = AppointmentSerializer(appointments, many=True)
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
         return Response(serializer.data)
     
     def post(self, request, doctor_id):
@@ -72,6 +99,8 @@ class AppointmentFilterByDoctor(APIView):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            if not self.is_authenticated(request):
+                return render(request, 'login.html')
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     
@@ -84,7 +113,7 @@ class AppointmentFilterByDoctor(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 # api for getting filtered appointments by date
-class AppointmentFilterByDate(APIView):
+class AppointmentFilterByDate(AppointmentList):
     def get_object(self, pk):
         try:
             return Appointment.objects.get(id=pk)
@@ -97,6 +126,8 @@ class AppointmentFilterByDate(APIView):
         #  variable storing all appointments sooner or equal to the desired date
         appointments = Appointment.objects.filter(date__lte=desired_date)
         serializer = AppointmentSerializer(appointments, many=True)
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
         return Response(serializer.data)
     
     def post(self, request, date):
@@ -104,6 +135,8 @@ class AppointmentFilterByDate(APIView):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            if not self.is_authenticated(request):
+                return render(request, 'login.html')
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     
@@ -116,7 +149,7 @@ class AppointmentFilterByDate(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
-class AppointmentFilterByDateAndDoctor(APIView):
+class AppointmentFilterByDateAndDoctor(AppointmentList):
     def get_object(self, pk):
         try:
             return Appointment.objects.get(id=pk)
@@ -129,6 +162,8 @@ class AppointmentFilterByDateAndDoctor(APIView):
         desired_doctor = Doctor.objects.get(id=doctor_id)
         appointments = Appointment.objects.filter(date__lte=desired_date, doctor=desired_doctor)
         serializer = AppointmentSerializer(appointments, many=True)
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
         return Response(serializer.data)
     
     def post(self, request, date, doctor_id):
@@ -137,6 +172,8 @@ class AppointmentFilterByDateAndDoctor(APIView):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            if not self.is_authenticated(request):
+                return render(request, 'login.html')
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     

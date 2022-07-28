@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'doctors',
     'appointment',
     'filter',
+    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,7 +69,8 @@ ROOT_URLCONF = 'stefania_v00.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),os.path.join(BASE_DIR, 'frontend','build')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),os.path.join(BASE_DIR, 'frontend','build'),os.path.join(BASE_DIR, 'users','templates'),
+        os.path.join(BASE_DIR, 'api','templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
