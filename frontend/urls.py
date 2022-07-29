@@ -1,8 +1,6 @@
-from django.urls import include, path
-#from api import views
-from .views import index
-#from homepage import views as homepage_views
+from django.urls import path, include
+from . import views
 
 urlpatterns=[
-    path("",index)
+    path("",views.HomeView.as_view(),name="home"),
 ]

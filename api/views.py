@@ -1,12 +1,14 @@
 from datetime import datetime
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from appointment.models import Appointment
 from doctors.models import Doctor
 from patient.models import Patient
+
+from users.views import login_view
 import logging
 # Create your views here.
 
@@ -33,14 +35,14 @@ class AppointmentView(AppointmentList):
         appointments = Appointment.objects.all()
         serializer = AppointmentSerializer(appointments, many=True)
         if not self.is_authenticated(request):
-            return render(request, 'login.html')
+            return redirect('login')
         return Response(serializer.data)
 
 
     def post(self, request):
         serializer = AppointmentSerializer(data=request.data)
         if not self.is_authenticated(request):
-            return render(request, 'login.html')
+            return redirect('login')
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
