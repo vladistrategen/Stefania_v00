@@ -16,7 +16,7 @@ class AuthenticatedView(View):
 class HomeView(AuthenticatedView):
     def get(self, request):
         if self.is_authenticated(request):
-            return render(request, 'main_page.html')
+            return render(request, 'index.html')
         else:
             return redirect('/users/login')
     
