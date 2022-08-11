@@ -1,9 +1,9 @@
-import { ViewState,EditingState,IntegratedEditing } from '@devexpress/dx-react-scheduler';
-import {AllDayPanel,Scheduler,AppointmentForm,AppointmentTooltip,Appointments,WeekView } from '@devexpress/dx-react-scheduler-material-ui';    
+import { ViewState,EditingState,IntegratedEditing, } from '@devexpress/dx-react-scheduler';
+import {AllDayPanel,Scheduler,AppointmentForm,AppointmentTooltip,Appointments,WeekView,DayView,GroupingPanel } from '@devexpress/dx-react-scheduler-material-ui';    
 import React from 'react';
 const Calendar=() => {
     return <div id="Scheduler">
-        <Scheduler>
+        <Scheduler >
             <ViewState />
             <EditingState />
             <IntegratedEditing />
@@ -12,6 +12,7 @@ const Calendar=() => {
             <AppointmentTooltip />
             <AllDayPanel />
             <AppointmentForm />
+            
         </Scheduler>
         
     </div>;
