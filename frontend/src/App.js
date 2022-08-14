@@ -1,16 +1,16 @@
-
+import 'devextreme/dist/css/dx.common.css';
+import 'devextreme/dist/css/dx.light.css';
+import ExtremeCalendar from './devextremeComponents/ExtremeScheduler';
 import './App.css';
 import Calendar from './components/Scheduler';
 import Demo from './components/Demo';
 import React,{ useEffect } from 'react';
 import { WeekView } from '@devexpress/dx-react-scheduler';
+import Fetchtest from './components/Fetchtest';
+
 function App() {
 
-  useEffect(() => {
-     fetch('/api/appointments')
-        .then(res => res.json())
-        .then(data => console.log(data));  
-  }, []);
+  
 
   return (
     <div className="App">
@@ -23,7 +23,8 @@ function App() {
         
         
       {/* create a button that sticks to the bottom right named add appointment*/}
-      <Demo />
+      <ExtremeCalendar />
+     
       
       </header>
     </div>

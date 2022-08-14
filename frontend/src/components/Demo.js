@@ -1,4 +1,5 @@
 import * as React from 'react';
+import axios from 'axios';
 import Paper from '@mui/material/Paper';
 import {
   ViewState, GroupingState, IntegratedGrouping, IntegratedEditing, EditingState,
@@ -16,7 +17,6 @@ import {
 import {
   teal, indigo,
 } from '@mui/material/colors';
-
 const appointments = [{
   id: 0,
   title: 'Watercolor Landscape',
@@ -114,7 +114,6 @@ const owners = [{
               },    ];
 
 
-
 export default class Demo extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -133,6 +132,20 @@ export default class Demo extends React.PureComponent {
 
     this.commitChanges = this.commitChanges.bind(this);
   }
+
+  componentDidMount() {
+    fetch("http://127.0.0.1:8000/api/appointments")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+              data: result,
+          });
+        }
+      ).then(console.log(this.state.data.doctor));
+  }       
+
+
 
   commitChanges({ added, changed, deleted }) {
     this.setState((state) => {
