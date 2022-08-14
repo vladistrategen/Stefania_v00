@@ -152,3 +152,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
     ('* * * * *', 'stefania_v00.cron.execute_every_minute'),
 ]
 '''
+CORS_ALLOW_ALL_ORIGINS = True
