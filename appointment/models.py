@@ -9,9 +9,9 @@ class Appointment(models.Model):
     doctor = models.ForeignKey('doctors.Doctor', on_delete=models.CASCADE)
     patient = models.ForeignKey('patient.Patient', on_delete=models.CASCADE)
     #confirmation_status = models.CharField(max_length=20, choices=)
-    status = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False)
     description = models.TextField(default="")
-    
+    duration_in_minutes = models.IntegerField(default=0)
 
     STATUS_PENDING_SENT = "pending_sent"
     STATUS_PENDING_NOT_SENT = "pending_not_sent"
