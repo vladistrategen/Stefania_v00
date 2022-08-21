@@ -16,7 +16,19 @@ function handleErrors(response) {
     }
     return response;
 }
- 
+
+
+
+const owners = [{
+    text: 'Andrew Glover',
+    id: 1,
+  }, {
+    text: 'Arnie Schwartz',
+    id: 2,
+  }, {
+      text: 'John Heart',
+      id: 3,
+    }];
 
 
 function ExtremeCalendar() {
@@ -67,8 +79,13 @@ function ExtremeCalendar() {
         
         <Scheduler
             dataSource={appointments}
+            views={['day', 'week']}
+            showAllDayPanel={false}
+            
+            cellDuration={15}
             defaultCurrentDate="2022-07-30"
             appointmentComponent={AppointmentCustom}
+            appointmentTooltipComponent={AppointmentTooltipCustom}
             onAppointmentFormOpening={onAppointmentFormOpeningc}
         />
     )

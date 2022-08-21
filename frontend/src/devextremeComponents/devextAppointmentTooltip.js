@@ -12,7 +12,7 @@ import React from 'react';
 
 
 async function getAppointment(id) {
-  const res = await fetch('127.0.0.1:8000/api/appointments/' + id);
+  const res = await fetch('/api/appointments/' + id);
   const data = await res.json();
   return data;
 }

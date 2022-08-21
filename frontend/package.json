@@ -49,6 +49,8 @@
     ]
   },
   "devDependencies": {
-    "devextreme-themebuilder": "^22.1.3"
+    "devextreme-cldr-data": "^1.0.3",
+    "devextreme-themebuilder": "^22.1.3",
+    "globalize": "^1.7.0"
   }
 }

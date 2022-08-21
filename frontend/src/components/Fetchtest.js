@@ -9,7 +9,7 @@ function parseData(data) {
     for (let i = 0; i < data.length; i++) {
         const parsedStartDate=new Date(data[i].date+"T"+data[i].time+".000Z");
         const parsedEndDate=new Date();
-        parsedEndDate.setTime(parsedEndDate.getTime()+parseInt(data[i].duration_in_minutes)*60000);
+        parsedEndDate.setTime(parsedStartDate.getTime()+parseInt(data[i].duration_in_minutes)*60000);
         parsedData.push({
             "id": data[i].id,
             "description": data[i].description,
