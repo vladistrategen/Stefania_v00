@@ -19,54 +19,71 @@ function handleErrors(response) {
 
 
 
-const owners = [{
-    text: 'Andrew Glover',
-    id: 1,
-  }, {
-    text: 'Arnie Schwartz',
-    id: 2,
-  }, {
-      text: 'John Heart',
-      id: 3,
-    }];
 
 
 function ExtremeCalendar() {
     const [appointments, setAppointments] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+    const [patients, setPatients] = useState([]);
     useEffect(() => {
         getAppointments()
+        getDoctors()
+        getPatients()
+        console.log(doctors);
     }, []);
 
     let getAppointments = async () => {
-        const res = await fetch('http://127.0.0.1:8000/api/appointments');
+        const res = await fetch('/api/appointments');
         const data = await res.json();
         
         const parsedData = parseData(data);
-        console.log(parsedData);
+        //console.log(parsedData);
         setAppointments(parsedData);
 
+    }
+
+
+    let getDoctors = async () => {
+        const res = await fetch('/api/doctors');
+        const data = await res.json();
+        setDoctors(data);
+    }
+
+    let getPatients = async () => {
+        const res = await fetch('/api/patients');
+        const data = await res.json();
+        setPatients(data);
     }
 
     //return the scheduler with the AppointmentForm component
     
     const onAppointmentFormOpeningc = (e) => {
         const {form} =e;
+        // make select boxes for doctors and patients larger
         form.option('items', [{
             label: {text: 'Doctor'},
             editorType: 'dxSelectBox',
             dataField: 'doctorId',
             editorOptions: {
                 dataSource: doctors,
-                displayExpr: 'name',
-                valueExpr: 'id'
+                displayExpr: (item) => {return 'Dr. '+ item.first_name + ' ' + item.last_name},
+                valueExpr: 'id',
+
+                // TODO: make data update when doctor is changed
+
             }
         }, {
             label: {text: 'Patient'},
             editorType: 'dxSelectBox',
             dataField: 'patientId',
+            // make select boxes for doctors and patients larger
+            
             editorOptions: {
-                dataSource: doctors,
-                displayExpr: 'name',
+                //width: 300,
+                
+                dataSource: patients,
+                displayExpr: (item) => {return item.middle_name==null? item.last_name + ' ' + item.first_name + ' - ' + item.birth_date :
+                                        item.last_name + ' ' + item.first_name + ' ' + item.middle_name + ' - ' + item.birth_date},
                 valueExpr: 'id'
             }
         }]);
@@ -83,7 +100,7 @@ function ExtremeCalendar() {
             showAllDayPanel={false}
             
             cellDuration={15}
-            defaultCurrentDate="2022-07-30"
+            defaultCurrentDate="2022-07-27"
             appointmentComponent={AppointmentCustom}
             appointmentTooltipComponent={AppointmentTooltipCustom}
             onAppointmentFormOpening={onAppointmentFormOpeningc}

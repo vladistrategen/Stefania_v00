@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect,useState } from 'react';
 import Query from 'devextreme/data/query';
+
+
 
 
 async function getAppointment(id) {
@@ -28,22 +30,27 @@ function parseDate(date){
 
 export default function AppointmentCustom(model) {
   const { targetedAppointmentData } = model.data;
-  console.log(targetedAppointmentData);
-  const appointmentData= getAppointment(targetedAppointmentData.id) || {};
-  const doctorData= getDoctor(targetedAppointmentData.doctorId) || {};
-  const patientData= getPatient(targetedAppointmentData.patientId) || {};
+  //console.log(targetedAppointmentData);
+  //const appointmentData= getAppointment(targetedAppointmentData.id) || {};
+  //const doctorData= getDoctor(targetedAppointmentData.doctorId) || {};
+  //const patientData= getPatient(targetedAppointmentData.patientId) || {};
   
-  appointmentData.then((value)=>{
-    console.log(value);
-  });
-  doctorData.then((value)=>{
-    console.log(value);
-  });
-  patientData.then((value)=>{
-    console.log(value);
-  });
+  const [appointmentData, setAppointment] = useState([]); 
+  const [doctorData, setDocotor] = useState([]);
+  const [patientData, setPatient] = useState([]);
+  useEffect(() => {
+    getAppointment(targetedAppointmentData.id).then((data) => {
+      setAppointment(data);
+    });
+    getDoctor(targetedAppointmentData.doctorId).then((data) => {
+      setDocotor(data);
+    });
+    getPatient(targetedAppointmentData.patientId).then((data) => {
+      setPatient(data);
+    });
+  }, []);
 
-
+  console.log(patientData);
 
 
 
@@ -52,10 +59,10 @@ export default function AppointmentCustom(model) {
       
       <div>
         
-      {targetedAppointmentData.description}
+      {appointmentData.description}
       </div>
       <div>
-            Pacientul {patientData.first_name + patientData.last_name} cu nr de telefon: {patientData.phone_number } nascut pe:{patientData.birtday}
+            Pacientul {patientData.first_name + patientData.last_name} cu nr de telefon: {patientData.phone_number } nascut pe:{patientData.birth_date}
             este programat la doctorul {doctorData.first_name + " " + doctorData.last_name} 
       </div>
       <div >
