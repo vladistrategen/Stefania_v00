@@ -3,13 +3,28 @@ import '../App.css';
 import axios from 'axios';
 import React, { useEffect,useState } from 'react';
 import Scheduler, { Editing, Resource } from 'devextreme-react/scheduler';
-import {appointments,doctors} from './data.js';
+import * as AspNetData from 'devextreme-aspnet-data-nojquery';
 import AppointmentCustom from './devextAppointment';
 import AppointmentTooltipCustom from './devextAppointmentTooltip'; 
 import parseData from '../components/Fetchtest';
 import 'whatwg-fetch';
 import renderer from 'devextreme/core/renderer';
  
+const base_url = '/api/appointments';
+
+
+const dataSource = AspNetData.createStore({
+    key: 'id',
+    loadUrl: (base_url)=>{return base_url+'/GET'},
+    insertUrl: base_url+'/Post',
+    updateUrl: base_url+'/Put',
+    deleteUrl: base_url+'/Delete',
+    onBeforeSend: function(method, ajaxOptions) {
+        ajaxOptions.xhrFields = { withCredentials: true };
+    }
+});
+
+
 function handleErrors(response) {
     if (!response.ok) {
         throw Error(response.statusText);
@@ -25,6 +40,8 @@ function ExtremeCalendar() {
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [patients, setPatients] = useState([]);
+
+    
     useEffect(() => {
         getAppointments()
         getDoctors()
@@ -95,7 +112,7 @@ function ExtremeCalendar() {
     return (
         
         <Scheduler
-            dataSource={appointments}
+            dataSource={dataSource}
             views={['day', 'week']}
             showAllDayPanel={false}
             
@@ -104,6 +121,7 @@ function ExtremeCalendar() {
             appointmentComponent={AppointmentCustom}
             appointmentTooltipComponent={AppointmentTooltipCustom}
             onAppointmentFormOpening={onAppointmentFormOpeningc}
+            
         />
     )
 }
