@@ -12,6 +12,8 @@ class Appointment(models.Model):
     completed = models.BooleanField(default=False)
     description = models.TextField(default="")
     duration_in_minutes = models.IntegerField(default=0)
+    
+    
 
     STATUS_PENDING_SENT = "pending_sent"
     STATUS_PENDING_NOT_SENT = "pending_not_sent"
