@@ -5,8 +5,9 @@ import './App.css';
 import Calendar from './components/Scheduler';
 import Demo from './components/Demo';
 import React,{ useEffect } from 'react';
+import ExtremeCalendarClassComponent from './devextremeComponents/ExtremeSchedulerClass';
 import { WeekView } from '@devexpress/dx-react-scheduler';
-import Fetchtest from './components/Fetchtest';
+import Fetchtest from './tools/FetchTools';
 
 function App() {
 
