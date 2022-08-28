@@ -55,6 +55,8 @@ class AppointmentView(AppointmentList):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+    
+    
 # api for getting detailed appointment
 class AppointmentDetail(AppointmentList):
     def get_object(self, pk):
@@ -70,6 +72,16 @@ class AppointmentDetail(AppointmentList):
             return render(request, 'login.html')
         return Response(serializer.data)
     
+    def post(self, request, pk):
+        appointment = self.get_object(pk)
+        serializer = AppointmentSerializer(appointment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            if not self.is_authenticated(request):
+                return render(request, 'login.html')
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
     def put(self, request, pk):
         appointment = self.get_object(pk)
         serializer = AppointmentSerializer(appointment, data=request.data)
@@ -79,6 +91,13 @@ class AppointmentDetail(AppointmentList):
                 return render(request, 'login.html')
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk):
+        appointment = self.get_object(pk)
+        appointment.delete()
+        if not self.is_authenticated(request):
+            return render(request, 'login.html')
+        return Response(status=204)
 
 # api for getting filtered appointments by doctor
 class AppointmentFilterByDoctor(AppointmentList):
