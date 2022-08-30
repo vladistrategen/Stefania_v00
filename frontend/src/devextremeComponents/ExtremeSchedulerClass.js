@@ -4,6 +4,25 @@ import Scheduler from "devextreme-react/scheduler";
 import {parseDataMultiple} from "../tools/FetchTools";
 import AppointmentCustom from "./devextAppointment";
 import AppointmentTooltipCustom from "./devextAppointmentTooltip";
+import CustomAppointmentForm from "./CustomForm";
+
+
+const initialFormState = {
+    popupVisible: true,
+    popupTitle: "",
+    editData: {
+        "id": 0,
+        "description": '-',
+        "startDate": '',
+        "endDate": '',
+        "doctorId": 0,
+        "patientId": 0,
+        "confirmation_status": '',
+        "completed": false,
+    },
+};
+
+
 export default class ExtremeCalendarClassComponent extends React.Component{
     constructor(props){
         super(props);
@@ -12,11 +31,7 @@ export default class ExtremeCalendarClassComponent extends React.Component{
             patientData:[],
             doctorData:[],
         };
-        this.onAllowAddingChanged = this.onAllowAddingChanged.bind(this);
-        this.onAllowDeletingChanged = this.onAllowDeletingChanged.bind(this);
-        this.onAllowResizingChanged = this.onAllowResizingChanged.bind(this);
-        this.onAllowDraggingChanged = this.onAllowDraggingChanged.bind(this);
-        this.onAllowUpdatingChanged = this.onAllowUpdatingChanged.bind(this);
+        
         
             
     }
@@ -65,6 +80,7 @@ export default class ExtremeCalendarClassComponent extends React.Component{
         )
     }
     
+        
 
     
     
@@ -72,15 +88,22 @@ export default class ExtremeCalendarClassComponent extends React.Component{
     render(){
         
         return(
-            <Scheduler
-                dataSource={this.state.appointmentData}
-                defaultCurrentDate="2022/08/30"
-                appointmentComponent={AppointmentCustom}
-                appointmentTooltipComponent={AppointmentTooltipCustom}
-                //onAppointmentFormOpening={this.onAppointmentFormOpeningc}
-                editing={this.editingoptions}
+            <div>
+                <Scheduler
+                    dataSource={this.state.appointmentData}
+                    defaultCurrentDate="2022/08/30"
+                    appointmentComponent={AppointmentCustom}
+                    appointmentTooltipComponent={AppointmentTooltipCustom}
+                    onAppointmentFormOpening={this.onAppointmentFormOpeningc}
+                    editing={this.editingoptions}
+                    />
+                <Scheduler />
 
-            />
+                <CustomAppointmentForm initialState={initialFormState} >
+
+                </CustomAppointmentForm>
+                
+            </div>
         )
     }
 
@@ -120,25 +143,7 @@ export default class ExtremeCalendarClassComponent extends React.Component{
     }*/
 
 
-    onAllowAddingChanged(e) {
-        this.setState({ allowAdding: e.value });
-      }
     
-      onAllowDeletingChanged(e) {
-        this.setState({ allowDeleting: e.value });
-      }
-    
-      onAllowResizingChanged(e) {
-        this.setState({ allowResizing: e.value });
-      }
-    
-      onAllowDraggingChanged(e) {
-        this.setState({ allowDragging: e.value });
-      }
-    
-      onAllowUpdatingChanged(e) {
-        this.setState({ allowUpdating: e.value });
-      }
     
       
     

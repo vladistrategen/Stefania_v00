@@ -1,95 +1,47 @@
 import 'devextreme/dist/css/dx.light.css';
 import '../App.css';
-import axios from 'axios';
-import React, { useEffect,useState } from 'react';
+import React, { useEffect,useState,useMemo, useReducer } from 'react';
 import Scheduler, { Editing, Resource } from 'devextreme-react/scheduler';
-//import * as AspNetData from 'devextreme-aspnet-data-nojquery';
-//import { patientsMockData,doctorsMockData,appointmentsMockData }  from './data';
+
 import AppointmentCustom from './devextAppointment';
 import AppointmentTooltipCustom from './devextAppointmentTooltip'; 
 import {parseDataMultiple, parseDataSingle} from '../tools/FetchTools';
-import CustomStore from 'devextreme/data/custom_store';
 import { SelectBox } from 'devextreme-react/select-box';
-import formtest from './Formtest'
+import Popup, {ToolbarItem}from 'devextreme-react/popup';
+import ScrollView from 'devextreme-react/scroll-view';
+import { formatDate } from 'devextreme/localization';
+import DateBox from 'devextreme-react/date-box';
 import 'whatwg-fetch';
+import notify from 'devextreme/ui/notify';
 //import renderer from 'devextreme/core/renderer';
  
 
 const base_url = '/api/appointments';
 
 
-function isNotEmpty(value) {
-    return value !== undefined && value !== null && value !== "";
-}
-
-const dataSourcec = new CustomStore({
-    key:'id',
-    load:(loadOptions) => {
-        console.log(loadOptions)
-        let params="";
-        if(loadOptions.searchValue!=null){
-            params+='/'+loadOptions.searchValue.id;
-        }
-        //params=params.substring(0,params.length-1);
-        return fetch(base_url+params)
-        .then(response=>response.json())
-        .then((data) => {
-            console.log(data)
-            return {
-                data: parseDataSingle(data),
-                totalCount: data.length};
-            }).then().catch(error=>{
-                console.log(error);
-            }
-        );
-
-    },
-    insert:(options) => {
-        const insertUrl = base_url;
-        console.log(insertUrl);
-        return fetch(insertUrl, {
-            method: 'POST',
-            body: JSON.stringify(options.data)
-        })
-            .then(handleErrors)
-            .then(response => response.json())
-    },
-    update:(options) => {
-        const opstring = options.toString();
-        const updateUrl=base_url+'/'+opstring;
-        
-        return fetch(updateUrl, {
-            method: 'PUT',
-            body: JSON.stringify(options.data)
-        })
-            .then(handleErrors)
-            .then(response => response.json())
-    },
-    remove:(key) => {
-        const removeUrl=base_url+`/${encodeURIComponent(key)}`;
-        console.log(key);
-        return fetch(removeUrl, {
-            method: 'DELETE'
-        })
-            .then(handleErrors)
-            .then(response => response.json())
-    }
-}),
-    handleErrors = (response) => {
-        if (!response.ok) {
-            throw Error(response.statusText);
-        }
-        return response;
-    }
-
-
-
-
-
-
 
 
 function ExtremeCalendar() {
+
+    const initialFormState = {
+        popupVisible: false,
+        popupTitle: "customer",
+        editData: {
+            "id": 0,
+            "description": '-',
+            "startDate": '',
+            "endDate": '',
+            "doctorId": 0,
+            "patientId": 0,
+            "confirmation_status": '',
+            "completed": false,
+        },
+    };
+
+    function reducer(state, action) {
+        return { ...state, ...action };
+    }
+
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [patients, setPatients] = useState([]);
@@ -101,11 +53,9 @@ function ExtremeCalendar() {
         const res = await fetch('/api/appointments/');
         const data = await res.json();
         const parsedData = parseDataMultiple(data);
-        console.log('data:',data)
-        console.log('parsedData:',parsedData)
+        //console.log('data:',data)
+        //console.log('parsedData:',parsedData)
         setAppointments(parsedData);
-        
-
     }
     const getDoctors = async () => {
         const res = await fetch('/api/doctors/');
@@ -127,61 +77,185 @@ function ExtremeCalendar() {
         //console.log(doctors);
         
     }, []);
-    //return the scheduler with the AppointmentForm component
     
-    //console.log('Appointments:',appointments);
-    //console.log(doctors);
-    //console.log(patients);
+    const buttonConfigSave = useMemo(() => {
+        return {
+            text: "Save",
+            type: "default",
+            useSubmitBehavior: true,
+            onClick: () => {
+                setTempdata(formState.editData)
+                .then(dispatch({ popupVisible: false }));
+                
+            }
+        };
+    } , [tempdata]);
 
+    const buttonConfigDeleteCancel = useMemo(() => {
+        return {
+            text: "Cancel",
+            type: "default",
+            onClick: () => {
+                dispatch({ popupVisible: false })
+                .then(setConfirmPopupState({ popupVisible: false }));
+            }
+        };
+    } , []);
 
-    
+    const buttonConfigDelete = useMemo(() => {
+        return {
+            text: "Sterge",
+            type: "danger",
+            useSubmitBehavior: true,
+            onClick: () => {
+                setConfirmPopupState({
+                    popupVisible: true,
+                    popupTitle: "Stergere",
+                });
+            }
+        };
+    } , []);
 
-    const onAppointmentFormOpeningc = (e) => {
-        //console.log(e);
+    const buttonConfigDeleteConfirm = useMemo(() => {
         
-        const {form} =e;
-        //console.log(typeof form)
-        // make handler function for form submit
-        const onFormSubmit = () => {
-            console.log('mergecuaie')
+        return {
+
+            text: "Sterge",
+            type: "danger",
+            
+            useSubmitBehavior: true,
+            onClick: () => {
+                dispatch({ popupVisible: false })
+                .then(setConfirmPopupState({ popupVisible: false }))
+                .then(console.log('sters'))
+            }
+        };
+    } , []);
+    
+
+    const [formState, dispatch] = useReducer(reducer, initialFormState);
+    const [tempdata, setTempdata] = useState({});    
+    
+    const doctorDisplayExpr = (item) => {
+        if(item!=null){
+            return "Dr. " + item.last_name + " " + item.first_name;
+        }
+    }
+
+    const patientDisplayExpr = (item) => {
+        if(item != null){
+            return item.middle_name === null ? item.last_name + " " + item.first_name + " " +item.birth_date
+            : item.last_name + " " + item.middle_name + " " + item.first_name+ " " + item.birth_date;
+        }
+    }
+
+    function CustomAppointmentFormRender()  {
+
+        const onDoctorChange = (e) => {
+            dispatch({editData: {...formState.editData, doctorId: e.value}});
+        }
+    
+        const onPatientChange = (e) =>{
+            dispatch({editData: {...formState.editData, patientId: e.value}});
+        }
+    
+        const onStartDateChange = (e) =>{
+            dispatch({editData: {editData: {...formState,startDate: e.value}}});
         }
         
-        // give the form submit handler to the form
-        //form.option('onFormSubmit', onFormSubmit);
-    
-        console.log(form.option())
-        form.option('onEditorEnterKey', onFormSubmit);
-        form.option('items', [{
-            label: {text: 'Doctor'},
-            editorType: 'dxSelectBox',
-            dataField: 'doctorId',
-            
-            editorOptions: {
-                
-                dataSource: doctors,
-                displayExpr: (item) => {return 'Dr. '+ item.first_name + ' ' + item.last_name},
-                valueExpr: 'id',
-                searchEnabled: true,
-                // TODO: make data update when doctor is changed
+        const getDoctor = (id) => {
+            return doctors.find(doctor => doctor.id === id);
+        }
+        const getPatient = (id) => {
+            return patients.find(patient => patient.id === id);
+        }
 
-            }
-        }, {
-            label: {text: 'Patient'},
-            editorType: 'dxSelectBox',
-            dataField: 'patientId',
-            // make select boxes for doctors and patients larger
-            
-            editorOptions: {
-                //width: 300,
-                searchEnabled: true,
-                dataSource: patients,
-                displayExpr: (item) => {return item.middle_name==null? item.last_name + ' ' + item.first_name + ' - ' + item.birth_date :
-                                        item.last_name + ' ' + item.first_name + ' ' + item.middle_name + ' - ' + item.birth_date},
-                valueExpr: 'id'
-            }
-        }]);
-        return 
+        return (
+            <div>
+                <ScrollView width="100%" height="100%">
+                    <div className='text-group'>
+                        <p>Programare la: {doctorDisplayExpr(getDoctor(formState.editData.doctorId))}</p>
+                        <p>Pacient: {patientDisplayExpr(getPatient(formState.editData.patientId))}</p>
+                        <p>Data: {new Date(formState.editData.startDate).toLocaleDateString('en-RO')}</p>
+                        <p>La ora: {new Date(formState.editData.startDate).toLocaleTimeString('en-RO')}</p>
+                    </div>
+                    <div>
+                        <div className="dx-field-label">
+                        </div>
+                        <div>
+                            <SelectBox
+                                className="dx-field-label"
+                                dataSource={doctors}
+                                width={400}
+                                searchEnabled={true}
+                                placeholder="Doctor:"
+                                onValueChanged={onDoctorChange}
+                                displayExpr={doctorDisplayExpr}
+                                value={formState.editData.doctorId}
+                                valueExpr='id'
+                            ></SelectBox>
+                            {/* style this box so that it is 10 px lower than the previous one*/}
+                            <SelectBox
+                                style={{ marginTop: '10px' }}
+                                className="dx-field-label"
+                                dataSource={patients}
+                                width={400}
+                                placeholder="Pacient:"
+                                onValueChanged={onPatientChange}
+                                searchEnabled={true}
+                                displayExpr={patientDisplayExpr}
+                                value={formState.editData.patientId}
+                                valueExpr='id'
+                            ></SelectBox>
+                        </div>
+                        {/* style this date box so that it is 10 px lower than the previous one and has a label on its left saying  "Data si ora"*/}
+                         
+                            <DateBox
+                                style={{ marginTop: '10px' }}
+                                className="dx-field-label"
+                                placeholder="Data:"
+                                width={400}
+                                type="datetime"
+                                onValueChanged={onStartDateChange}
+                                value={formState.editData.startDate}
+                            ></DateBox>
+
+                        
+                    </div>
+
+                </ScrollView>
+
+            </div>
+        );
     }
+
+    const initialConfirmPopupState={
+        popupVisible: false,
+    }
+    const [confirmPopupState, setConfirmPopupState] = useState({...initialConfirmPopupState});
+    function ConfirmDeletePopup(){
+        return (
+            <ScrollView width="100%" height="100%">
+                <div className='text-group'>
+                    {/* make an h1 tag styled centered both horizontally and vertically asking if they are sure they want to delete the appointment*/}
+                    <h1 style={{textAlign: 'center', verticalAlign: 'middle'}}>Sunteti sigur ca doriti sa stergeti programarea?</h1>
+
+                </div>
+                
+            </ScrollView>
+        );
+    }
+
+    function onAppointmentFormOpeningc(e) {
+        e.cancel = true;
+        if (e!=null){
+            dispatch({ popupVisible: true, editData: {...e.appointmentData}})
+            .then(console.log(formState));
+        }
+    }
+    
+
+    
 
     const editingoptions = {
         allowAdding: true,
@@ -193,26 +267,79 @@ function ExtremeCalendar() {
     
     //console.log(doctors)
     //console.log(patients)
-    
+    function onHiding(e) {
+        dispatch( {popupVisible: false });
+        //console.log(formState);
+    }
     
     return (
-        
-        <Scheduler
-            
-            dataSource={appointments}
-            views={['day', 'week']}
-            showAllDayPanel={false}
-            editing={editingoptions}
-            //startDayHour={8}
-            //endDayHour={20}
-            //cellDuration={15}
-            defaultCurrentDate={new Date("2022-07-30")}
-            appointmentComponent={AppointmentCustom}
-            appointmentTooltipComponent={AppointmentTooltipCustom}
-            onAppointmentFormOpening={formtest}
-            onAppointment
-            
-        />
+        <div>
+            <Scheduler
+                
+                dataSource={appointments}
+                views={['day', 'week']}
+                showAllDayPanel={false}
+                editing={editingoptions}
+                defaultCurrentDate={new Date("2022-07-30")}
+                appointmentComponent={AppointmentCustom}
+                appointmentTooltipComponent={AppointmentTooltipCustom}
+                onAppointmentFormOpening={onAppointmentFormOpeningc}
+                
+            />
+            <Popup
+                visible={formState.popupVisible}
+                width={500}
+                closeOnOutsideClick={true}
+                onHiding={onHiding}
+                title={formState.popupTitle}
+                contentRender={CustomAppointmentFormRender} >
+                    <ToolbarItem 
+                    widget="dxButton"
+                    toolbar="bottom"
+                    location={'after'}
+                    options={buttonConfigSave} />
+                    <ToolbarItem 
+                    
+                    widget={'dxButton'}
+                    toolbar={'bottom'}
+                    location={'left'}
+                    options={buttonConfigDelete} />
+
+                    
+
+            </Popup>
+            <Popup
+                visible={confirmPopupState.popupVisible}
+                height={'30%'}
+                width={'50%'}
+                closeOnOutsideClick={false}
+                onHiding={() => setConfirmPopupState({...initialConfirmPopupState})}
+                title={'Stergere programarea'}
+                contentRender={ConfirmDeletePopup} >
+                    {/* make a large button that says STERGE */}
+                    <ToolbarItem
+                        widget={'dxButton'}
+                        toolbar={'bottom'}
+                        location={'left'}
+                        options={buttonConfigDeleteConfirm} />
+                    {/*style this button to be big */}
+                    <ToolbarItem
+                        
+                        widget={'dxButton'}
+                        toolbar={'bottom'}
+                        location={'after'}
+                        options={buttonConfigDeleteCancel} />
+
+            </Popup>
+
+
+
+                
+                
+                
+
+            </div>
+
     )
 }
          
