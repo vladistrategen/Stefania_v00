@@ -41,7 +41,7 @@ export default class AppointmentTooltipCustom extends React.Component {
         )
   }
   render() {
-    console.log(this.state);
+    //console.log(this.state);
     return (
       <div>
         Date: {this.state.appointmentData.startDate}

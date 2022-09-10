@@ -21,7 +21,7 @@ const base_url = '/api/appointments';
 
 
 
-function ExtremeCalendar() {
+function ExtremeCalendarUseState() {
 
     const initialFormState = {
         popupVisible: false,
@@ -34,12 +34,8 @@ function ExtremeCalendar() {
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [patients, setPatients] = useState([]);
-    const [formState, dispatch] = useReducer(reducer, initialFormState);
-    const [tempdata, setTempdata] = useState({});    
-    const initialConfirmPopupState={
-        popupVisible: false,
-    }
-    const [confirmPopupState, setConfirmPopupState] = useState(initialConfirmPopupState);
+
+    
     
 
     const getAppointments = async () => {
@@ -74,47 +70,43 @@ function ExtremeCalendar() {
     const buttonConfigSave = useMemo(() => {
         return {
             text: "Save",
-            
+            type: "default",
+            useSubmitBehavior: true,
             onClick: () => {
-                if(formState.editData.id  ){
-                    console.log(formState);
-                    setTempdata(formState.editData)
-                    dispatch({ popupVisible: false });
-                }
+                setTempdata(formState.editData)
+                .then(setFormState({ popupVisible: false }));
                 
             }
         };
-    } , [setTempdata,dispatch,formState]);
+    } , [tempdata]);
 
     const buttonConfigDeleteCancel = useMemo(() => {
         return {
             text: "Cancel",
             type: "default",
             onClick: () => {
-                dispatch({ popupVisible: false })
+                setFormState({ popupVisible: false })
                 .then(setConfirmPopupState({ popupVisible: false }));
             }
         };
-    } ,[confirmPopupState]);
+    } , []);
 
     const buttonConfigDelete = useMemo(() => {
-        console.log(formState)
         return {
             text: "Sterge",
             type: "danger",
             useSubmitBehavior: true,
             onClick: () => {
                 setConfirmPopupState({
+                    ...formState,
                     popupVisible: true,
                     popupTitle: "Stergere",
-                })
-                dispatch({ popupVisible: false});
+                });
             }
         };
-    } , [confirmPopupState,formState]);
+    } , []);
 
     const buttonConfigDeleteConfirm = useMemo(() => {
-        
         
         return {
 
@@ -123,18 +115,17 @@ function ExtremeCalendar() {
             
             useSubmitBehavior: true,
             onClick: () => {
-                setConfirmPopupState({popupVisible: false} )
-                .then(dispatch({ popupVisible: false }))
+                setConfirmPopupState({ ...confirmPopupState,popupVisible: false })
+                .then(setFormState({ popupVisible: false }))
                 .then(console.log('sters'))
             }
         };
-    } , [confirmPopupState,formState]);
+    } , []);
     
 
-    function reducer(state, action) {
-        return { ...state, ...action };
-    }
-    
+   
+    const [formState, setFormState] = useState( initialFormState);
+    const [tempdata, setTempdata] = useState({});    
     
     const doctorDisplayExpr = (item) => {
         if(item!=null){
@@ -152,15 +143,15 @@ function ExtremeCalendar() {
     function CustomAppointmentFormRender()  {
 
         const onDoctorChange = (e) => {
-            dispatch({editData: {...formState.editData, doctorId: e.value}});
+            setFormState({...formState,editData: {...formState.editData, doctorId: e.value}});
         }
     
         const onPatientChange = (e) =>{
-            dispatch({editData: {...formState.editData, patientId: e.value}});
+            setFormState({...formState,editData: {...formState.editData, patientId: e.value}});
         }
     
         const onStartDateChange = (e) =>{
-            dispatch({editData: {editData: {...formState.editData,startDate: e.value}}});
+            setFormState({...formState,editData: {editData: {...formState.editData,startDate: e.value}}});
         }
         
         const getDoctor = (id) => {
@@ -229,7 +220,11 @@ function ExtremeCalendar() {
         );
     }
 
-    
+    const initialConfirmPopupState={
+        popupVisible: false,
+        
+    }
+    const [confirmPopupState, setConfirmPopupState] = useState({...initialConfirmPopupState});
     function ConfirmDeletePopup(){
         return (
             <ScrollView width="100%" height="100%">
@@ -245,9 +240,11 @@ function ExtremeCalendar() {
 
     function onAppointmentFormOpeningc(e) {
         e.cancel = true;
-        if (!(e.appointmentData === undefined)){  
-            dispatch({popupVisible: true, editData:e.appointmentData})
-            .then(console.log(formState))
+        console.log(e);
+
+        if (e.appointmentData!=null){
+            setFormState({popupTitle:"Modifica Programarea",popupVisible: true, editData: e.appointmentData})
+            .then(console.log(formState));
         }
     }
     
@@ -265,7 +262,7 @@ function ExtremeCalendar() {
     //console.log(doctors)
     //console.log(patients)
     function onHiding(e) {
-        dispatch( {popupVisible: false });
+        setFormState( {popupVisible: false });
         //console.log(formState);
     }
     
@@ -341,4 +338,4 @@ function ExtremeCalendar() {
 }
          
 
-export default ExtremeCalendar;
+export default ExtremeCalendarUseState;

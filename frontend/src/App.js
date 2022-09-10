@@ -8,7 +8,7 @@ import React,{ useEffect } from 'react';
 import ExtremeCalendarClassComponent from './devextremeComponents/ExtremeSchedulerClass';
 import { WeekView } from '@devexpress/dx-react-scheduler';
 import Fetchtest from './tools/FetchTools';
-
+import ExtremeCalendarUseState from './devextremeComponents/ExtremeSchedulerUseState';
 function App() {
 
   
@@ -24,7 +24,7 @@ function App() {
         
         
       {/* create a button that sticks to the bottom right named add appointment*/}
-      <ExtremeCalendar />
+      <ExtremeCalendar/>
      
       
       </header>
