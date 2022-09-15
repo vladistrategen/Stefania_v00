@@ -9,9 +9,9 @@ import {parseDataMultiple, parseDataSingle} from '../tools/FetchTools';
 import { SelectBox } from 'devextreme-react/select-box';
 import Popup, {ToolbarItem}from 'devextreme-react/popup';
 import ScrollView from 'devextreme-react/scroll-view';
-import { formatDate } from 'devextreme/localization';
 import DateBox from 'devextreme-react/date-box';
-import 'whatwg-fetch';
+
+
 import notify from 'devextreme/ui/notify';
 //import renderer from 'devextreme/core/renderer';
  
@@ -151,6 +151,7 @@ function ExtremeCalendar() {
 
     function CustomAppointmentFormRender()  {
 
+        
         const onDoctorChange = (e) => {
             dispatch({editData: {...formState.editData, doctorId: e.value}});
         }
@@ -169,16 +170,17 @@ function ExtremeCalendar() {
         const getPatient = (id) => {
             return patients.find(patient => patient.id === id);
         }
-
         return (
             <div>
                 <ScrollView width="100%" height="100%">
-                    <div className='text-group'>
-                        <p>Programare la: {doctorDisplayExpr(getDoctor(formState.editData.doctorId))}</p>
-                        <p>Pacient: {patientDisplayExpr(getPatient(formState.editData.patientId))}</p>
-                        <p>Data: {new Date(formState.editData.startDate).toLocaleDateString('en-RO')}</p>
-                        <p>La ora: {new Date(formState.editData.startDate).toLocaleTimeString('en-RO')}</p>
-                    </div>
+                    {/* will only be displayed if appointment exists*/ }
+                    
+                        <div className='text-group'>
+                            <p>Programare la: {doctorDisplayExpr(getDoctor(formState.editData.doctorId))}</p>
+                            <p>Pacient: {patientDisplayExpr(getPatient(formState.editData.patientId))}</p>
+                            <p>Data: {new Date(formState.editData.startDate).toLocaleDateString('en-RO')}</p>
+                            <p>La ora: {new Date(formState.editData.startDate).toLocaleTimeString('en-RO')}</p>
+                        </div>
                     <div>
                         <div className="dx-field-label">
                         </div>
@@ -230,6 +232,7 @@ function ExtremeCalendar() {
     }
 
     
+    
     function ConfirmDeletePopup(){
         return (
             <ScrollView width="100%" height="100%">
@@ -245,14 +248,27 @@ function ExtremeCalendar() {
 
     function onAppointmentFormOpeningc(e) {
         e.cancel = true;
-        if (!(e.appointmentData === undefined)){  
-            dispatch({popupVisible: true, editData:e.appointmentData})
-            .then(console.log(formState))
+        if(e.appointmentData.hasOwnProperty('id')){
+            dispatch({popupVisible: true, editData:e.appointmentData, isEdit: true});
         }
+        else{
+            dispatch({popupVisible: true, editData:{}, isEdit: false});
+        }
+
     }
     
 
-    
+    /*const AddPatientButton = () => {
+        return (
+            <Button
+                text="Adauga pacient"
+                type="default"
+
+                onClick={() => {
+                }}
+            />
+        );
+    }*/
 
     const editingoptions = {
         allowAdding: true,
@@ -269,6 +285,8 @@ function ExtremeCalendar() {
         //console.log(formState);
     }
     
+    
+
     return (
         <div>
             <Scheduler
@@ -296,7 +314,7 @@ function ExtremeCalendar() {
                     location={'after'}
                     options={buttonConfigSave} />
                     <ToolbarItem 
-                    
+
                     widget={'dxButton'}
                     toolbar={'bottom'}
                     location={'left'}
@@ -312,6 +330,7 @@ function ExtremeCalendar() {
                 closeOnOutsideClick={false}
                 onHiding={() => setConfirmPopupState({...initialConfirmPopupState})}
                 title={'Stergere programarea'}
+                
                 contentRender={ConfirmDeletePopup} >
                     
                     <ToolbarItem
