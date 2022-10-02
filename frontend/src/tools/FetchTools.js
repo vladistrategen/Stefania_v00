@@ -37,8 +37,28 @@ const parseDataSingle = (data) => {
       "patientId": data.patient,
       "confirmation_status": data.confirmation_status,
       "completed": data.completed,
+      "price": data.price,
     });
   }
+
+const parseForRequest = (data) => {
+    const parsedStartDate = new Date(data.startDate);
+    const parsedEndDate = new Date(data.endDate);
+    const duration = (parsedEndDate.getTime() - parsedStartDate.getTime()) / 60000;
+
+    return {
+    "id": data.id,
+    "date": parsedStartDate.toISOString().split("T")[0],
+    "time": parsedStartDate.toISOString().split("T")[1].split(".")[0],
+    "completed": data.completed,
+    "description": data.description,
+    "duration_in_minutes": duration,
+    "price": data.price,
+    "confirmation_status": data.confirmation_status,
+    "doctor": data.doctorId,
+    "patient": data.patientId
+    }
+}
             
 /*
 const Fetchtest = () => {
@@ -70,4 +90,4 @@ const Fetchtest = () => {
 
 }*/
 
-export {parseDataMultiple,parseDataSingle};
+export {parseDataMultiple,parseDataSingle,parseForRequest};

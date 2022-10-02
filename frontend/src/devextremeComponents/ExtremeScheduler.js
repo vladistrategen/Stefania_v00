@@ -5,7 +5,7 @@ import Scheduler, { Editing, Resource } from 'devextreme-react/scheduler';
 
 import AppointmentCustom from './devextAppointment';
 import AppointmentTooltipCustom from './devextAppointmentTooltip'; 
-import {parseDataMultiple, parseDataSingle} from '../tools/FetchTools';
+import {parseDataMultiple, parseDataSingle,parseForRequest} from '../tools/FetchTools';
 import { SelectBox } from 'devextreme-react/select-box';
 import Popup, {ToolbarItem}from 'devextreme-react/popup';
 import ScrollView from 'devextreme-react/scroll-view';
@@ -40,7 +40,17 @@ function ExtremeCalendar() {
         popupVisible: false,
     }
     const [confirmPopupState, setConfirmPopupState] = useState(initialConfirmPopupState);
-    
+    const [csrftoken, setCsrfToken] = useState('');
+
+    const getCsrfToken = async () => {
+        // get the token from the cookie list
+        const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+        if (token) {
+            setCsrfToken(token.split('=')[1]);
+        }
+        console.log('token', token);
+    }
+
 
     const getAppointments = async () => {
         const res = await fetch('/api/appointments/');
@@ -64,6 +74,7 @@ function ExtremeCalendar() {
         setPatients(data);
     }
     useEffect(() => {
+        getCsrfToken();
         getAppointments();
         getDoctors();
         getPatients();
@@ -77,9 +88,22 @@ function ExtremeCalendar() {
             
             onClick: () => {
                 if(formState.editData.id  ){
-                    console.log(formState);
-                    setTempdata(formState.editData)
-                    dispatch({ popupVisible: false });
+                    // make a put request
+                    const requestOptions = {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify(parseForRequest(formState.editData))
+                    };
+                    fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            getAppointments();
+                            dispatch({ popupVisible: false});
+                            notify('Programare modificata', 'success', 3000);
+                        });
+                }else{
+                    //TODO: make a post request
                 }
                 
             }
@@ -124,8 +148,8 @@ function ExtremeCalendar() {
             useSubmitBehavior: true,
             onClick: () => {
                 setConfirmPopupState({popupVisible: false} )
-                .then(dispatch({ popupVisible: false }))
-                .then(console.log('sters'))
+                dispatch({ popupVisible: false })
+                console.log('sters')
             }
         };
     } , [confirmPopupState,formState]);
