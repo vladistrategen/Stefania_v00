@@ -18,19 +18,19 @@ Check the following commands
 ```
 $ npm -v
 ```
-output: ``` 8.15.0 ```
+Possible output: ``` 8.15.0 ```
 
 
 ```
 $ python --version
 ```
-output: ```  Python 3.10.7```
+Possible output: ```  Python 3.10.7```
 
 ```
 $ pip --version
 ```
 
-output: ``` pip 22.2.2 ```
+Possible output: ``` pip 22.2.2 ```
 
 ## Installation
 _Step by step guide on installing the project on a machine_ 
