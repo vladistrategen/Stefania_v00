@@ -6,7 +6,8 @@ import Scheduler, { Editing, Resource } from 'devextreme-react/scheduler';
 import AppointmentCustom from './devextAppointment';
 import AppointmentTooltipCustom from './devextAppointmentTooltip'; 
 import {parseDataMultiple, parseDataSingle,parseForRequest} from '../tools/FetchTools';
-import { SelectBox } from 'devextreme-react/select-box';
+import { SelectBox} from 'devextreme-react/select-box';
+import {NumberBox} from 'devextreme-react/number-box';
 import Popup, {ToolbarItem}from 'devextreme-react/popup';
 import ScrollView from 'devextreme-react/scroll-view';
 import DateBox from 'devextreme-react/date-box';
@@ -26,7 +27,17 @@ function ExtremeCalendar() {
     const initialFormState = {
         popupVisible: false,
         popupTitle: "customer",
-        editData: {},
+        editData: {
+            "description": "",
+            "startDate": new Date(),
+            'endDate': new Date(),
+            "doctorId": 0,
+            "patientId": 0,
+            "confirmation_status": "pending_not_sent",
+            "completed": false,
+            "price": 0,
+
+        },
     };
 
     
@@ -40,6 +51,7 @@ function ExtremeCalendar() {
         popupVisible: false,
     }
     const [confirmPopupState, setConfirmPopupState] = useState(initialConfirmPopupState);
+    const [createPopupState, setCreatePopupState] = useState(initialFormState);
     const [csrftoken, setCsrfToken] = useState('');
 
     const getCsrfToken = async () => {
@@ -48,7 +60,7 @@ function ExtremeCalendar() {
         if (token) {
             setCsrfToken(token.split('=')[1]);
         }
-        console.log('token', token);
+        //console.log('token', token);
     }
 
 
@@ -84,7 +96,9 @@ function ExtremeCalendar() {
     
     const buttonConfigSave = useMemo(() => {
         return {
-            text: "Save",
+            text: "Salveaza",
+            type: "success",
+            useSubmitBehavior: true,
             
             onClick: () => {
                 if(formState.editData.id  ){
@@ -97,18 +111,30 @@ function ExtremeCalendar() {
                     fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data);
+                            
                             getAppointments();
                             dispatch({ popupVisible: false});
                             notify('Programare modificata', 'success', 3000);
                         });
                 }else{
-                    //TODO: make a post request
+                    const requestOptions = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify(parseForRequest(createPopupState.editData))
+                    };
+                    fetch(base_url + '/', requestOptions)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Post request data:",data);
+                            getAppointments();
+                            setCreatePopupState({ popupVisible: false});
+                            notify('Programare adaugata', 'success', 3000);
+                        });
                 }
                 
             }
         };
-    } , [setTempdata,dispatch,formState]);
+    } , [setTempdata,dispatch,formState,createPopupState]);
 
     const buttonConfigDeleteCancel = useMemo(() => {
         return {
@@ -197,14 +223,14 @@ function ExtremeCalendar() {
         return (
             <div>
                 <ScrollView width="100%" height="100%">
-                    {/* will only be displayed if appointment exists*/ }
-                    
-                        <div className='text-group'>
-                            <p>Programare la: {doctorDisplayExpr(getDoctor(formState.editData.doctorId))}</p>
-                            <p>Pacient: {patientDisplayExpr(getPatient(formState.editData.patientId))}</p>
-                            <p>Data: {new Date(formState.editData.startDate).toLocaleDateString('en-RO')}</p>
-                            <p>La ora: {new Date(formState.editData.startDate).toLocaleTimeString('en-RO')}</p>
-                        </div>
+                    {/* will only be displayed if appointment exists*/}
+
+                    <div className='text-group'>
+                        <p>Programare la: {doctorDisplayExpr(getDoctor(formState.editData.doctorId))}</p>
+                        <p>Pacient: {patientDisplayExpr(getPatient(formState.editData.patientId))}</p>
+                        <p>Data: {new Date(formState.editData.startDate).toLocaleDateString('en-RO')}</p>
+                        <p>La ora: {new Date(formState.editData.startDate).toLocaleTimeString('en-RO')}</p>
+                    </div>
                     <div>
                         <div className="dx-field-label">
                         </div>
@@ -220,7 +246,6 @@ function ExtremeCalendar() {
                                 value={formState.editData.doctorId}
                                 valueExpr='id'
                             ></SelectBox>
-                            {/* style this box so that it is 10 px lower than the previous one*/}
                             <SelectBox
                                 style={{ marginTop: '10px' }}
                                 className="dx-field-label"
@@ -234,19 +259,18 @@ function ExtremeCalendar() {
                                 valueExpr='id'
                             ></SelectBox>
                         </div>
-                        {/* style this date box so that it is 10 px lower than the previous one and has a label on its left saying  "Data si ora"*/}
-                         
-                            <DateBox
-                                style={{ marginTop: '10px' }}
-                                className="dx-field-label"
-                                placeholder="Data:"
-                                width={400}
-                                type="datetime"
-                                onValueChanged={onStartDateChange}
-                                value={formState.editData.startDate}
-                            ></DateBox>
 
-                        
+                        <DateBox
+                            style={{ marginTop: '10px' }}
+                            className="dx-field-label"
+                            placeholder="Data:"
+                            width={400}
+                            type="datetime"
+                            onValueChanged={onStartDateChange}
+                            value={formState.editData.startDate}
+                        ></DateBox>
+
+
                     </div>
 
                 </ScrollView>
@@ -255,13 +279,93 @@ function ExtremeCalendar() {
         );
     }
 
+    function CustomAppointmentCreateForm() {
+        const onDoctorChange = (e) => {
+            setCreatePopupState({...createPopupState,editData: {...createPopupState.editData, doctorId: e.value}})
+            console.log(createPopupState.editData)
+        }
+        const onPatientChange = (e) =>{
+            setCreatePopupState({...createPopupState,editData: {...createPopupState.editData, patientId: e.value}});
+        }
+        const onStartDateChange = (e) =>{
+            setCreatePopupState({...createPopupState,editData: {...createPopupState.editData,startDate: e.value}});
+        }
+        const onDurationChange = (e) =>{
+            const newEndDate= (new Date(createPopupState.editData.startDate).getMinutes() + e.value).toISOString();
+            setCreatePopupState({...createPopupState,editData: {...createPopupState.editData,endDate: newEndDate}});
+        }
+        return (
+            <div>
+                <ScrollView width="100%" height="100%">
+                    <div className='text-group'>
+                        <h1>Creaza o noua programare</h1>
+                    </div>
+                    <div>
+                        <div>
+                            <SelectBox
+                                style={{ marginTop: '10px' }}
+                                className="dx-field-label"
+                                dataSource={doctors}
+                                width={400}
+                                searchEnabled={true}
+                                placeholder="Doctor:"
+                                value={createPopupState.editData.doctorId}
+                                onValueChanged={onDoctorChange}
+                                displayExpr={doctorDisplayExpr}
+                                valueExpr='id'
+                            ></SelectBox>
+                        </div>
+                        <div >
+                            <SelectBox
+                                style={{ marginTop: '10px' }}
+                                className="dx-field-label"
+                                dataSource={patients}
+                                width={400}
+                                searchEnabled={true}
+                                placeholder="Pacient:"
+                                onValueChanged={onPatientChange}
+                                value={createPopupState.editData.patientId}
+                                displayExpr={patientDisplayExpr}
+                                valueExpr='id'
+                            ></SelectBox>
+                        </div>
+                        <div >
+                            <DateBox
+                                style={{ marginTop: '10px' }}
+                                className="dx-field-label"
+                                placeholder="Data:"
+                                width={400}
+                                type="datetime"
+                                onValueChanged={onStartDateChange}
+                                value={createPopupState.editData.startDate}
+                            ></DateBox>
+                        </div>
+                        <div className='dx-field' style={{ marginTop: '10px' }}>
+                            <div className='dx-field-label'>
+                                Durata:
+                            </div>
+                            <div className="dx-field-value">
+                                <NumberBox
+                                    style={{ marginTop: '10px' }}
+                                    onValueChanged={onDurationChange}
+                                    value={() => {return new Date(createPopupState.editData.endDate).getMinutes() 
+                                        - new Date(createPopupState.editData.startDate).getMinutes()}}
+                                ></NumberBox>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </ScrollView>
+            </div>
+        );
+    }
+    
     
     
     function ConfirmDeletePopup(){
         return (
             <ScrollView width="100%" height="100%">
                 <div className='text-group'>
-                    {/* make an h1 tag styled centered both horizontally and vertically asking if they are sure they want to delete the appointment*/}
                     <h1 style={{textAlign: 'center', verticalAlign: 'middle'}}>Sunteti sigur ca doriti sa stergeti programarea?</h1>
 
                 </div>
@@ -271,12 +375,15 @@ function ExtremeCalendar() {
     }
 
     function onAppointmentFormOpeningc(e) {
+        console.log(e);
         e.cancel = true;
         if(e.appointmentData.hasOwnProperty('id')){
-            dispatch({popupVisible: true, editData:e.appointmentData, isEdit: true});
+            dispatch({popupVisible: true, editData:e.appointmentData, popupTitle: 'Editare programare'});
         }
         else{
-            dispatch({popupVisible: true, editData:{}, isEdit: false});
+            setCreatePopupState({...confirmPopupState,popupVisible: true, editData:{...confirmPopupState.editData,startDate:e.appointmentData.startDate,
+            endDate:e.appointmentData.endDate}, popupTitle: 'Creare programare'})
+           
         }
 
     }
@@ -325,19 +432,19 @@ function ExtremeCalendar() {
                 onAppointmentFormOpening={onAppointmentFormOpeningc}
                 
             />
-            <Popup
+            <Popup // the popup for editing appointments
                 visible={formState.popupVisible}
                 width={500}
                 closeOnOutsideClick={true}
                 onHiding={onHiding}
                 title={formState.popupTitle}
                 contentRender={CustomAppointmentFormRender} >
-                    <ToolbarItem 
+                    <ToolbarItem // the toolbar item for the save button
                     widget="dxButton"
                     toolbar="bottom"
                     location={'after'}
                     options={buttonConfigSave} />
-                    <ToolbarItem 
+                    <ToolbarItem // the toolbar item for the delete button
 
                     widget={'dxButton'}
                     toolbar={'bottom'}
@@ -347,7 +454,7 @@ function ExtremeCalendar() {
                     
 
             </Popup>
-            <Popup
+            <Popup // the popup for confirming the deletion of an appointment
                 visible={confirmPopupState.popupVisible}
                 height={'30%'}
                 width={'50%'}
@@ -357,19 +464,36 @@ function ExtremeCalendar() {
                 
                 contentRender={ConfirmDeletePopup} >
                     
-                    <ToolbarItem
+                    <ToolbarItem // the button for confirming the deletion of an appointment
                         widget={'dxButton'}
                         toolbar={'bottom'}
                         location={'left'}
                         options={buttonConfigDeleteConfirm} />
                     
-                    <ToolbarItem
+                    <ToolbarItem // the cancel button
                         
                         widget={'dxButton'}
                         toolbar={'bottom'}
                         location={'after'}
                         options={buttonConfigDeleteCancel} />
 
+            </Popup>
+            <Popup // the popup for creating appointments
+                visible={createPopupState.popupVisible}
+                
+                width={500}
+                closeOnOutsideClick={false}
+                onHiding={() => setCreatePopupState({...initialFormState})}
+                title={'Creare Programare'}
+                contentRender={CustomAppointmentCreateForm} >
+                
+                <ToolbarItem // the save button
+                    widget={'dxButton'}
+                    toolbar={'bottom'}
+                    location={'after'}
+                    options={buttonConfigSave} />
+                
+                
             </Popup>
 
 
