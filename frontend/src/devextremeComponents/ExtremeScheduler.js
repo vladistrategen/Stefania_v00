@@ -100,7 +100,7 @@ function ExtremeCalendar() {
             type: "success",
             useSubmitBehavior: true,
             
-            onClick: () => {
+            onClick: async () => {
                 if(formState.editData.id  ){
                     // make a put request
                     const requestOptions = {
@@ -108,7 +108,7 @@ function ExtremeCalendar() {
                         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
                         body: JSON.stringify(parseForRequest(formState.editData))
                     };
-                    fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
+                    await fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
                         .then(response => response.json())
                         .then(data => {
                             
@@ -122,15 +122,16 @@ function ExtremeCalendar() {
                         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
                         body: JSON.stringify(parseForRequest(createPopupState.editData))
                     };
-                    fetch(base_url + '/', requestOptions)
+                    await fetch(base_url + '/', requestOptions)
                         .then(response => response.json())
                         .then(data => {
-                            console.log("Post request data:",data);
+                            console.log("Post request data:",data)
                             getAppointments();
-                            setCreatePopupState({ popupVisible: false});
-                            notify('Programare adaugata', 'success', 3000);
-                        });
-                }
+                        ;})
+                        .then(setCreatePopupState({...createPopupState,popupVisible:false}))
+                        .then(notify('Programare creata', 'success', 3000))
+                        
+                    }   
                 
             }
         };
@@ -172,11 +173,28 @@ function ExtremeCalendar() {
             type: "danger",
             
             useSubmitBehavior: true,
-            onClick: () => {
-                setConfirmPopupState({popupVisible: false} )
-                dispatch({ popupVisible: false })
-                console.log('sters')
+            onClick: async () => {
+                // check for null case
+                if (formState.editData.id) {
+
+                    const requestOptions = {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                    };
+                    await fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
+                        .then(response => response.json())
+                        .then(data => {
+                            getAppointments();
+                            setConfirmPopupState({ ...confirmPopupState, popupVisible: false });
+                            notify('Programare stearsa', 'success', 3000);
+                        })
+
+                }
             }
+
         };
     } , [confirmPopupState,formState]);
     
@@ -282,7 +300,7 @@ function ExtremeCalendar() {
     function CustomAppointmentCreateForm() {
         const onDoctorChange = (e) => {
             setCreatePopupState({...createPopupState,editData: {...createPopupState.editData, doctorId: e.value}})
-            console.log(createPopupState.editData)
+            
         }
         const onPatientChange = (e) =>{
             setCreatePopupState({...createPopupState,editData: {...createPopupState.editData, patientId: e.value}});
@@ -291,9 +309,16 @@ function ExtremeCalendar() {
             setCreatePopupState({...createPopupState,editData: {...createPopupState.editData,startDate: e.value}});
         }
         const onDurationChange = (e) =>{
-            const newEndDate= (new Date(createPopupState.editData.startDate).getMinutes() + e.value).toISOString();
+            const newvalue = new Date(createPopupState.editData.startDate).getTime() + e.value * 60000;
+            const newEndDate = new Date(newvalue);
             setCreatePopupState({...createPopupState,editData: {...createPopupState.editData,endDate: newEndDate}});
         }
+        const getMinutes = (startDate,endDate) => {
+            const d1 = new Date(startDate);
+            const d2 = new Date(endDate);
+            return parseInt((d2.getTime() - d1.getTime()) / 60000);
+        }
+        
         return (
             <div>
                 <ScrollView width="100%" height="100%">
@@ -301,55 +326,63 @@ function ExtremeCalendar() {
                         <h1>Creaza o noua programare</h1>
                     </div>
                     <div>
-                        <div>
-                            <SelectBox
-                                style={{ marginTop: '10px' }}
-                                className="dx-field-label"
-                                dataSource={doctors}
-                                width={400}
-                                searchEnabled={true}
-                                placeholder="Doctor:"
-                                value={createPopupState.editData.doctorId}
-                                onValueChanged={onDoctorChange}
-                                displayExpr={doctorDisplayExpr}
-                                valueExpr='id'
-                            ></SelectBox>
+                        <div className='dx-field'>
+                            <div className="dx-field-label" style={{ marginTop: '10px' }}> Doctor:</div>
+                            <div>
+                                <SelectBox
+                                    style={{ marginTop: '10px' }}
+                                    className="dx-field-value"
+                                    dataSource={doctors}
+                                    
+                                    searchEnabled={true}
+                                    placeholder="Doctor:"
+                                    value={createPopupState.editData.doctorId}
+                                    onValueChanged={onDoctorChange}
+                                    displayExpr={doctorDisplayExpr}
+                                    valueExpr='id'
+                                ></SelectBox>
+                            </div>
                         </div>
-                        <div >
-                            <SelectBox
-                                style={{ marginTop: '10px' }}
-                                className="dx-field-label"
-                                dataSource={patients}
-                                width={400}
-                                searchEnabled={true}
-                                placeholder="Pacient:"
-                                onValueChanged={onPatientChange}
-                                value={createPopupState.editData.patientId}
-                                displayExpr={patientDisplayExpr}
-                                valueExpr='id'
-                            ></SelectBox>
+                        <div className='dx-field'>
+                            <div className="dx-field-label" style={{ marginTop: '10px' }}> Pacient:</div>
+                            <div >
+                                <SelectBox
+                                    style={{ marginTop: '10px' }}
+                                    className="dx-field-value"
+                                    dataSource={patients}
+
+                                    searchEnabled={true}
+                                    placeholder="Pacient:"
+                                    onValueChanged={onPatientChange}
+                                    value={createPopupState.editData.patientId}
+                                    displayExpr={patientDisplayExpr}
+                                    valueExpr='id'
+                                ></SelectBox>
+                            </div>
                         </div>
-                        <div >
-                            <DateBox
-                                style={{ marginTop: '10px' }}
-                                className="dx-field-label"
-                                placeholder="Data:"
-                                width={400}
-                                type="datetime"
-                                onValueChanged={onStartDateChange}
-                                value={createPopupState.editData.startDate}
-                            ></DateBox>
+                        <div className='dx-field' >
+                            <div className="dx-field-label" style={{ marginTop: '10px' }}> Data si ora:</div>
+                            <div >
+                                <DateBox
+                                    style={{ marginTop: '10px' }}
+                                    className="dx-field-value"
+                                    placeholder="Data:"
+                                    type="datetime"
+                                    onValueChanged={onStartDateChange}
+                                    value={createPopupState.editData.startDate}
+                                ></DateBox>
+                            </div>
                         </div>
-                        <div className='dx-field' style={{ marginTop: '10px' }}>
-                            <div className='dx-field-label'>
+
+                        <div className='dx-field' >
+                            <div className='dx-field-label' style={{ marginTop: '10px' }}>
                                 Durata:
                             </div>
                             <div className="dx-field-value">
                                 <NumberBox
                                     style={{ marginTop: '10px' }}
                                     onValueChanged={onDurationChange}
-                                    value={() => {return new Date(createPopupState.editData.endDate).getMinutes() 
-                                        - new Date(createPopupState.editData.startDate).getMinutes()}}
+                                    value={getMinutes(createPopupState.editData.startDate,createPopupState.editData.endDate)}
                                 ></NumberBox>
                             </div>
                         </div>
@@ -375,7 +408,7 @@ function ExtremeCalendar() {
     }
 
     function onAppointmentFormOpeningc(e) {
-        console.log(e);
+        
         e.cancel = true;
         if(e.appointmentData.hasOwnProperty('id')){
             dispatch({popupVisible: true, editData:e.appointmentData, popupTitle: 'Editare programare'});
