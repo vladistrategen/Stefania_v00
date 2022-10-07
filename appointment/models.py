@@ -10,7 +10,7 @@ class Appointment(models.Model):
     patient = models.ForeignKey('patient.Patient', on_delete=models.CASCADE)
     #confirmation_status = models.CharField(max_length=20, choices=)
     completed = models.BooleanField(default=False)
-    description = models.TextField(default="")
+    description = models.CharField(max_length=200, blank=True)
     duration_in_minutes = models.IntegerField(default=0)
     price=models.IntegerField(default=0)
     
@@ -34,24 +34,4 @@ class Appointment(models.Model):
     
     #create a method that makes an api call and sends a text message to the patient asking to confirm the appointment one day prior 
     # to the appointment date and store the response in the confirmation_status field
-    def send_confirmation_text(self):
-        pass
-        '''
-        #import the Twilio module
-        from twilio.rest import Client
-        #create a Twilio client
-        client = Client(account_sid, auth_token)
-        #create a message object
-        message = client.messages.create(
-            body="Please confirm your appointment with " + self.doctor.first_name + " " + self.doctor.last_name + " on " + self.date.strftime("%Y-%m-%d") + " at " + self.time.strftime("%H:%M") + ".",
-            from_=twilio_number,
-            to=self.patient.phone_number
-        )
-        #store the message id in the confirmation_status field
-        self.confirmation_status = message.sid
-        self.save()
-        #return the message id
-        return message.sid
-        '''
-    
     
