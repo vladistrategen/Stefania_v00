@@ -63,7 +63,7 @@ class AppointmentDetail(AppointmentList):
         try:
             return Appointment.objects.get(id=pk)
         except Appointment.DoesNotExist:
-            return Http404
+            raise Http404
     
     def get(self, request, pk):
         appointment = self.get_object(pk)
@@ -93,10 +93,10 @@ class AppointmentDetail(AppointmentList):
         return Response(serializer.errors, status=400)
 
     def delete(self, request, pk):
-        appointment = self.get_object(pk)
-        appointment.delete()
         if not self.is_authenticated(request):
             return render(request, 'login.html')
+        appointment = self.get_object(pk)
+        appointment.delete()
         return Response(status=204)
 
 # api for getting filtered appointments by doctor
@@ -105,7 +105,7 @@ class AppointmentFilterByDoctor(AppointmentList):
         try:
             return Doctor.objects.get(id=pk)
         except Doctor.DoesNotExist:
-            return Http404
+            raise Http404
     
     def get(self, request, doctor_id):
         desired_doctor = self.get_object(doctor_id)
@@ -139,7 +139,7 @@ class AppointmentFilterByDate(AppointmentList):
         try:
             return Appointment.objects.get(id=pk)
         except Appointment.DoesNotExist:
-            return Http404
+            raise Http404
     
     def get(self, request, date):
         to_str=date.strftime('%Y-%m-%d')
@@ -175,7 +175,7 @@ class AppointmentFilterByDateAndDoctor(AppointmentList):
         try:
             return Appointment.objects.get(id=pk)
         except Appointment.DoesNotExist:
-            return Http404
+            raise Http404
     
     def get(self, request, date, doctor_id):
         to_str=date.strftime('%Y-%m-%d')
@@ -235,7 +235,7 @@ class DoctorDetail(APIView):
         try:
             return Doctor.objects.get(id=pk)
         except Doctor.DoesNotExist:
-            return Http404
+            raise Http404
     
     def get(self, request, pk):
         doctor = self.get_object(pk)
@@ -280,7 +280,7 @@ class PatientDetail(APIView):
         try:
             return Patient.objects.get(id=pk)
         except Patient.DoesNotExist:
-            return Http404
+            raise Http404
     
     def get(self, request, pk):
         patient = self.get_object(pk)
