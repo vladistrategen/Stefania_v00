@@ -90,4 +90,11 @@ const Fetchtest = () => {
 
 }*/
 
-export {parseDataMultiple,parseDataSingle,parseForRequest};
+// make a function to fetch the data from the server, with request options, appointment id, and url as parameters
+
+const makeRequest = async (options, id, url) => {
+    const res = await fetch(url + '/' + id + '/',  options);
+    const data = await res.json();
+    return data;
+}
+export {parseDataMultiple,parseDataSingle,parseForRequest,makeRequest};
