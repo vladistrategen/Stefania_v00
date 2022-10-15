@@ -115,24 +115,7 @@ class AppointmentFilterByDoctor(AppointmentList):
             return render(request, 'login.html')
         return Response(serializer.data)
     
-    def post(self, request, doctor_id):
-        doctor = self.get_object(doctor_id)
-        serializer = AppointmentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            if not self.is_authenticated(request):
-                return render(request, 'login.html')
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
     
-    def put(self, request, doctor_id):
-        doctor = self.get_object(doctor_id)
-        appointments = Appointment.objects.filter(doctor=doctor)
-        serializer = AppointmentSerializer(appointments, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
 # api for getting filtered appointments by date
 class AppointmentFilterByDate(AppointmentList):
     def get_object(self, pk):
@@ -151,24 +134,7 @@ class AppointmentFilterByDate(AppointmentList):
             return render(request, 'login.html')
         return Response(serializer.data)
     
-    def post(self, request, date):
-        desired_date = datetime.strptime(date, '%Y-%m-%d').date()
-        serializer = AppointmentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            if not self.is_authenticated(request):
-                return render(request, 'login.html')
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
     
-    def put(self, request, date):
-        desired_date = datetime.strptime(date, '%Y-%m-%d').date()
-        appointments = Appointment.objects.filter(date=desired_date)
-        serializer = AppointmentSerializer(appointments, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
 
 class AppointmentFilterByDateAndDoctor(AppointmentList):
     def get_object(self, pk):
@@ -187,26 +153,7 @@ class AppointmentFilterByDateAndDoctor(AppointmentList):
             return render(request, 'login.html')
         return Response(serializer.data)
     
-    def post(self, request, date, doctor_id):
-        desired_date = datetime.strptime(date, '%Y-%m-%d').date()
-        desired_doctor = Doctor.objects.get(id=doctor_id)
-        serializer = AppointmentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            if not self.is_authenticated(request):
-                return render(request, 'login.html')
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
     
-    def put(self, request, date, doctor_id):
-        desired_date = datetime.strptime(date, '%Y-%m-%d').date()
-        desired_doctor = Doctor.objects.get(id=doctor_id)
-        appointments = Appointment.objects.filter(date=desired_date, doctor=desired_doctor)
-        serializer = AppointmentSerializer(appointments, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
 
 # api for getting all doctors
 class DoctorView(APIView):
