@@ -5,9 +5,11 @@ import Scheduler, { Editing, Resource } from 'devextreme-react/scheduler';
 
 import AppointmentCustom from './devextAppointment';
 import AppointmentTooltipCustom from './devextAppointmentTooltip'; 
-import {parseDataMultiple, parseDataSingle,parseForRequest} from '../tools/FetchTools';
+import {parseDataMultiple, parseDataSingle,parseForRequest,makeRequest} from '../tools/FetchTools';
 import { SelectBox} from 'devextreme-react/select-box';
 import {NumberBox} from 'devextreme-react/number-box';
+import { Button } from 'devextreme-react/button';
+import {TextBox} from 'devextreme-react/text-box';
 import Popup, {ToolbarItem}from 'devextreme-react/popup';
 import ScrollView from 'devextreme-react/scroll-view';
 import DateBox from 'devextreme-react/date-box';
@@ -39,6 +41,17 @@ function ExtremeCalendar() {
 
         },
     };
+    const initialCreatePatientFormState = {
+        popupVisible: false,
+        popupTitle: "Adauga pacient",
+        editData: {
+            "last_name": "",
+            "first_name": "",
+            "phone_number": "",
+            'birth_date': new Date(),
+        }
+    };
+
 
     
 
@@ -52,6 +65,8 @@ function ExtremeCalendar() {
     }
     const [confirmPopupState, setConfirmPopupState] = useState(initialConfirmPopupState);
     const [createPopupState, setCreatePopupState] = useState(initialFormState);
+
+    const [createPatientPopupState, setCreatePatientPopupState] = useState(initialCreatePatientFormState);
     const [csrftoken, setCsrfToken] = useState('');
 
     const getCsrfToken = async () => {
@@ -149,20 +164,24 @@ function ExtremeCalendar() {
     } ,[confirmPopupState]);
 
     const buttonConfigDelete = useMemo(() => {
-        console.log(formState)
+        
         return {
             text: "Sterge",
             type: "danger",
             useSubmitBehavior: true,
-            onClick: () => {
-                setConfirmPopupState({
-                    popupVisible: true,
-                    popupTitle: "Stergere",
+            onClick: async () => {
+                await fetch(base_url + '/' + formState.editData.id + '/', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
                 })
-                dispatch({ popupVisible: false});
+                    .then(() => {
+                        window.location.reload();
+                    })
+                    .then(notify('Programare stearsa', 'success', 3000))        
             }
         };
     } , [confirmPopupState,formState]);
+
 
     const buttonConfigDeleteConfirm = useMemo(() => {
         
@@ -174,30 +193,63 @@ function ExtremeCalendar() {
             
             useSubmitBehavior: true,
             onClick: async () => {
-                // check for null case
+                console.log("delete:",formState)
                 if (formState.editData.id) {
-
                     const requestOptions = {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrftoken
-                        },
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify(parseForRequest(formState.editData))
                     };
                     await fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
                         .then(response => response.json())
                         .then(data => {
-                            getAppointments();
-                            setConfirmPopupState({ ...confirmPopupState, popupVisible: false });
                             notify('Programare stearsa', 'success', 3000);
                         })
+                        .finally(setConfirmPopupState({ popupVisible: false }))
+                        .finally(dispatch({ popupVisible: false }));
 
                 }
+                else {
+                    setConfirmPopupState({ popupVisible: false })
+                    notify('Eroare! Nu exista programare', 'error', 3000);
+                    dispatch({ popupVisible: false });
+                }
+
             }
 
         };
     } , [confirmPopupState,formState]);
     
+    const buttonConfigCreatePatient = useMemo(() => {
+        return {
+            text: "Salveaza",
+            type: "success",
+            useSubmitBehavior: true,
+            onClick: async () => {
+                console.log("create patient:",createPatientPopupState)
+                const parsedData={
+                    first_name:createPatientPopupState.editData.first_name,
+                    last_name:createPatientPopupState.editData.last_name,
+                    phone_number:createPatientPopupState.editData.phone_number,
+                    // birth date formatted from mm/dd/yyyy to yyyy-mm-dd
+                    birth_date:createPatientPopupState.editData.birth_date.toISOString().slice(0, 10),
+                }
+                const requestOptions = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                    body: JSON.stringify(parsedData)
+                };
+                
+                await fetch('/api/patients/', requestOptions)
+                    .then(response => response.json())
+                    .then(data => {
+                        getPatients();
+                        setCreatePatientPopupState({...createPatientPopupState,popupVisible:false})
+                        notify('Pacient creat', 'success', 3000)
+                    })
+            }
+        };
+    } , [createPatientPopupState]);
 
     function reducer(state, action) {
         return { ...state, ...action };
@@ -212,8 +264,7 @@ function ExtremeCalendar() {
 
     const patientDisplayExpr = (item) => {
         if(item != null){
-            return item.middle_name === null ? item.last_name + " " + item.first_name + " " +item.birth_date
-            : item.last_name + " " + item.middle_name + " " + item.first_name+ " " + item.birth_date;
+            return item.last_name + " " + item.first_name +' - ' + item.birth_date;
         }
     }
 
@@ -393,7 +444,77 @@ function ExtremeCalendar() {
         );
     }
     
-    
+    function CustomCreatePatientForm() {
+        const onFirstNameChange = (e) => {
+            setCreatePatientPopupState({ ...createPatientPopupState, editData: { ...createPatientPopupState.editData, first_name: e.value } })
+        }
+        const onPhoneChange = (e) => {
+            setCreatePatientPopupState({ ...createPatientPopupState, editData: { ...createPatientPopupState.editData, phone_number: e.value } })
+        }
+        const onBirthDateChange = (e) => {
+            setCreatePatientPopupState({ ...createPatientPopupState, editData: { ...createPatientPopupState.editData, birth_date: e.value } })
+        }
+        const onLastNameChange = (e) => {
+            setCreatePatientPopupState({ ...createPatientPopupState, editData: { ...createPatientPopupState.editData, last_name: e.value } })
+        }
+
+        return (
+            <div>
+                <ScrollView width="100%" height="100%">
+                    <div className='text-group'>
+                        <h1>Creaza un nou pacient</h1>
+                    </div>
+                    <div className='dx-field'>
+                        <div className="dx-field-label" style={{ marginTop: '10px' }}> Nume de familie:</div>
+                        <div className='dx-field-value'>
+                            <TextBox
+                                style={{ marginTop: '10px' }}
+                                placeholder="Nume de familie:"
+                                onValueChanged={onLastNameChange}
+                                value={createPatientPopupState.editData.last_name}
+                            ></TextBox>
+
+                        </div>
+                    </div>
+                    <div className='dx-field'>
+                        <div className="dx-field-label" style={{ marginTop: '10px' }}> Prenume:</div>
+                        <div className='dx-field-value'>
+                            <TextBox
+                                style={{ marginTop: '10px' }}
+                                placeholder="Prenume:"
+                                onValueChanged={onFirstNameChange}
+                                value={createPatientPopupState.editData.first_name}
+                            ></TextBox>
+                        
+                        </div>
+                    </div>
+                    <div className='dx-field'>
+                        <div className="dx-field-label" style={{ marginTop: '10px' }}> Telefon:</div>
+                        <div className='dx-field-value'>
+                            <NumberBox 
+                                placeholder='0722 123 456'
+                                style={{ marginTop: '10px' }}
+                                onValueChanged={onPhoneChange}
+                                value={createPatientPopupState.editData.phone_number}
+                            ></NumberBox>
+                        </div>
+                    </div>
+                    <div className='dx-field'>
+                        <div className="dx-field-label" style={{ marginTop: '10px' }}> Data nasterii:</div>
+                        <div className='dx-field-value'>
+                            <DateBox
+                                style={{ marginTop: '10px' }}
+                                placeholder="Data nasterii:"
+                                type="date"
+                                onValueChanged={onBirthDateChange}
+                                value={createPatientPopupState.editData.birth_date}
+                            ></DateBox>
+                        </div>
+                    </div>
+                </ScrollView>
+            </div>
+        );
+    }
     
     function ConfirmDeletePopup(){
         return (
@@ -525,19 +646,59 @@ function ExtremeCalendar() {
                     toolbar={'bottom'}
                     location={'after'}
                     options={buttonConfigSave} />
+            </Popup>
+            <Popup /* the popup for adding patients */
+                visible={createPatientPopupState.popupVisible}
+                width={500}
+                closeOnOutsideClick={false}
+                onHiding={() => setCreatePatientPopupState({...initialCreatePatientFormState})}
+                title={'Adauga Pacient'}
+                contentRender={CustomCreatePatientForm} >
                 
+                <ToolbarItem // the save button
+                    widget={'dxButton'}
+                    toolbar={'bottom'}
+                    location={'after'}/>
                 
+                <ToolbarItem // add patient button located on the lower middle part of the popup
+                    widget={'dxButton'}
+                    toolbar={'bottom'}
+                    location={'center'}
+                    options={buttonConfigCreatePatient} />
+
+                
+
             </Popup>
 
 
 
                 
-                
+               <div>
+                {/* google style floating button that is permanently on top of the scheduler, that is styled round and  of blue, saying "Adauga pacient" in  helvetica font */}
+               
+                <Button
+                    className='btn btn-primary'
+                    text="Adauga pacient"
+                    type="default"
+                    stylingMode="contained"
+                    icon="plus"
+                    onClick={() => {
+                        setCreatePatientPopupState({...createPatientPopupState,popupVisible: true, editData:{...createPatientPopupState.editData,startDate:createPopupState.editData.startDate,
+                        endDate:createPopupState.editData.endDate}, popupTitle: 'Creare programare'})
+                    }}
+                    style={{position: 'fixed', bottom: '30px', right: '30px', borderRadius: '8px', backgroundColor: '#2196f3', color: 'white', fontFamily: 'Helvetica', fontSize: '20px'}}
+                />
+                </div> 
                 
 
-            </div>
+        </div>
 
-    )
+        
+        
+       
+        
+    
+        )
 }
          
 
