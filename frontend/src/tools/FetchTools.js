@@ -97,4 +97,16 @@ const makeRequest = async (options, id, url) => {
     const data = await res.json();
     return data;
 }
-export {parseDataMultiple,parseDataSingle,parseForRequest,makeRequest};
+
+const parseDoctorColorData = (data) => {
+    let parsedData = [];
+    for(let i=0;i<data.length;i++){
+        parsedData.push({
+            "text": data[i].first_name + ' ' + data[i].last_name,
+            "id": data[i].id,
+            "color": data[i].preferred_color,
+        })
+    }
+    return parsedData;
+}
+export {parseDataMultiple,parseDataSingle,parseForRequest,makeRequest,parseDoctorColorData};

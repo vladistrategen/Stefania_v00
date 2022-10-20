@@ -1,15 +1,16 @@
 import 'devextreme/dist/css/dx.light.css';
 import '../App.css';
 import React, { useEffect,useState,useMemo, useReducer } from 'react';
-import Scheduler, { Editing, Resource } from 'devextreme-react/scheduler';
+import Scheduler, { View, Resource } from 'devextreme-react/scheduler';
 
 import AppointmentCustom from './devextAppointment';
 import AppointmentTooltipCustom from './devextAppointmentTooltip'; 
-import {parseDataMultiple, parseDataSingle,parseForRequest,makeRequest} from '../tools/FetchTools';
+import {parseDataMultiple, parseDoctorColorData,parseForRequest,} from '../tools/FetchTools';
 import { SelectBox} from 'devextreme-react/select-box';
 import {NumberBox} from 'devextreme-react/number-box';
 import { Button } from 'devextreme-react/button';
 import {TextBox} from 'devextreme-react/text-box';
+
 import Popup, {ToolbarItem}from 'devextreme-react/popup';
 import ScrollView from 'devextreme-react/scroll-view';
 import DateBox from 'devextreme-react/date-box';
@@ -51,23 +52,26 @@ function ExtremeCalendar() {
             'birth_date': new Date(),
         }
     };
-
-
+    const initialConfirmPopupState={
+        popupVisible: false,
+    }
     
 
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [patients, setPatients] = useState([]);
+    const [displayDoctorData, setDisplayDoctorData] = useState([]);
+    const [dataWasFetched, setDataWasFetched] = useState(false);
+
     const [formState, dispatch] = useReducer(reducer, initialFormState);
-    const [tempdata, setTempdata] = useState({});    
-    const initialConfirmPopupState={
-        popupVisible: false,
-    }
     const [confirmPopupState, setConfirmPopupState] = useState(initialConfirmPopupState);
     const [createPopupState, setCreatePopupState] = useState(initialFormState);
-
     const [createPatientPopupState, setCreatePatientPopupState] = useState(initialCreatePatientFormState);
     const [csrftoken, setCsrfToken] = useState('');
+    
+
+
+
 
     const getCsrfToken = async () => {
         // get the token from the cookie list
@@ -91,8 +95,9 @@ function ExtremeCalendar() {
         const res = await fetch('/api/doctors/');
         const data = await res.json();
         //console.log(data);
-
         setDoctors(data);
+        setDisplayDoctorData(parseDoctorColorData(data));
+        console.log('displayDoctorData',parseDoctorColorData(data));
     }
     const getPatients = async () => {
         const res = await fetch('/api/patients/');
@@ -103,10 +108,11 @@ function ExtremeCalendar() {
     useEffect(() => {
         getCsrfToken();
         getAppointments();
-        getDoctors();
         getPatients();
-        //console.log(doctors);
-        
+        getDoctors().then(() => {
+            setDataWasFetched(true); 
+            
+        });
     }, []);
     
     const buttonConfigSave = useMemo(() => {
@@ -150,7 +156,7 @@ function ExtremeCalendar() {
                 
             }
         };
-    } , [setTempdata,dispatch,formState,createPopupState]);
+    } , [,formState,createPopupState]);
 
     const buttonConfigDeleteCancel = useMemo(() => {
         return {
@@ -458,6 +464,7 @@ function ExtremeCalendar() {
             setCreatePatientPopupState({ ...createPatientPopupState, editData: { ...createPatientPopupState.editData, last_name: e.value } })
         }
 
+
         return (
             <div>
                 <ScrollView width="100%" height="100%">
@@ -536,7 +543,7 @@ function ExtremeCalendar() {
         }
         else{
             setCreatePopupState({...confirmPopupState,popupVisible: true, editData:{...confirmPopupState.editData,startDate:e.appointmentData.startDate,
-            endDate:e.appointmentData.endDate}, popupTitle: 'Creare programare'})
+            endDate:e.appointmentData.endDate,doctorId:e.appointmentData.doctorId}, popupTitle: 'Creare programare'})
            
         }
 
@@ -571,21 +578,43 @@ function ExtremeCalendar() {
     }
     
     
-
+    if(dataWasFetched===false)
+        return <div><h1>Loading...</h1></div>
     return (
         <div>
             <Scheduler
-                
                 dataSource={appointments}
-                views={['day', 'week']}
                 showAllDayPanel={false}
                 editing={editingoptions}
+                groups={['doctorId']}
                 defaultCurrentDate={new Date("2022-07-30")}
                 appointmentComponent={AppointmentCustom}
                 appointmentTooltipComponent={AppointmentTooltipCustom}
                 onAppointmentFormOpening={onAppointmentFormOpeningc}
+                defaultCurrentView="day"
+                views={['day', 'week',  'Vertical Grouping']}
+            >
                 
-            />
+                <Resource
+                    fieldExpr='doctorId'
+                    dataSource={displayDoctorData}
+                    label='Doctor'
+                />
+                <View
+                    name="Vertical Grouping"
+                    type="day"
+                    groupOrientation="vertical"
+                    cellDuration={60}
+                    
+                />
+                <View
+                    name="Horizontal Grouping"
+                    type="day"
+                    groupOrientation="horizontal"
+                    cellDuration={30}
+                    
+                />
+            </Scheduler>
             <Popup // the popup for editing appointments
                 visible={formState.popupVisible}
                 width={500}
@@ -593,19 +622,19 @@ function ExtremeCalendar() {
                 onHiding={onHiding}
                 title={formState.popupTitle}
                 contentRender={CustomAppointmentFormRender} >
-                    <ToolbarItem // the toolbar item for the save button
+                <ToolbarItem // the toolbar item for the save button
                     widget="dxButton"
                     toolbar="bottom"
                     location={'after'}
                     options={buttonConfigSave} />
-                    <ToolbarItem // the toolbar item for the delete button
+                <ToolbarItem // the toolbar item for the delete button
 
                     widget={'dxButton'}
                     toolbar={'bottom'}
                     location={'left'}
                     options={buttonConfigDelete} />
 
-                    
+
 
             </Popup>
             <Popup // the popup for confirming the deletion of an appointment
@@ -613,34 +642,34 @@ function ExtremeCalendar() {
                 height={'30%'}
                 width={'50%'}
                 closeOnOutsideClick={false}
-                onHiding={() => setConfirmPopupState({...initialConfirmPopupState})}
+                onHiding={() => setConfirmPopupState({ ...initialConfirmPopupState })}
                 title={'Stergere programarea'}
-                
+
                 contentRender={ConfirmDeletePopup} >
-                    
-                    <ToolbarItem // the button for confirming the deletion of an appointment
-                        widget={'dxButton'}
-                        toolbar={'bottom'}
-                        location={'left'}
-                        options={buttonConfigDeleteConfirm} />
-                    
-                    <ToolbarItem // the cancel button
-                        
-                        widget={'dxButton'}
-                        toolbar={'bottom'}
-                        location={'after'}
-                        options={buttonConfigDeleteCancel} />
+
+                <ToolbarItem // the button for confirming the deletion of an appointment
+                    widget={'dxButton'}
+                    toolbar={'bottom'}
+                    location={'left'}
+                    options={buttonConfigDeleteConfirm} />
+
+                <ToolbarItem // the cancel button
+
+                    widget={'dxButton'}
+                    toolbar={'bottom'}
+                    location={'after'}
+                    options={buttonConfigDeleteCancel} />
 
             </Popup>
             <Popup // the popup for creating appointments
                 visible={createPopupState.popupVisible}
-                
+
                 width={500}
                 closeOnOutsideClick={false}
-                onHiding={() => setCreatePopupState({...initialFormState})}
+                onHiding={() => setCreatePopupState({ ...initialFormState })}
                 title={'Creare Programare'}
                 contentRender={CustomAppointmentCreateForm} >
-                
+
                 <ToolbarItem // the save button
                     widget={'dxButton'}
                     toolbar={'bottom'}
@@ -651,31 +680,30 @@ function ExtremeCalendar() {
                 visible={createPatientPopupState.popupVisible}
                 width={500}
                 closeOnOutsideClick={false}
-                onHiding={() => setCreatePatientPopupState({...initialCreatePatientFormState})}
+                onHiding={() => setCreatePatientPopupState({ ...initialCreatePatientFormState })}
                 title={'Adauga Pacient'}
                 contentRender={CustomCreatePatientForm} >
-                
+
                 <ToolbarItem // the save button
                     widget={'dxButton'}
                     toolbar={'bottom'}
-                    location={'after'}/>
-                
+                    location={'after'} />
+
                 <ToolbarItem // add patient button located on the lower middle part of the popup
                     widget={'dxButton'}
                     toolbar={'bottom'}
                     location={'center'}
                     options={buttonConfigCreatePatient} />
 
-                
+
 
             </Popup>
 
 
 
-                
-               <div>
-                {/* google style floating button that is permanently on top of the scheduler, that is styled round and  of blue, saying "Adauga pacient" in  helvetica font */}
-               
+
+            <div>
+
                 <Button
                     className='btn btn-primary'
                     text="Adauga pacient"
@@ -683,22 +711,24 @@ function ExtremeCalendar() {
                     stylingMode="contained"
                     icon="plus"
                     onClick={() => {
-                        setCreatePatientPopupState({...createPatientPopupState,popupVisible: true, editData:{...createPatientPopupState.editData,startDate:createPopupState.editData.startDate,
-                        endDate:createPopupState.editData.endDate}, popupTitle: 'Creare programare'})
+                        setCreatePatientPopupState({
+                            ...createPatientPopupState, popupVisible: true, editData: {
+                                ...createPatientPopupState.editData, startDate: createPopupState.editData.startDate,
+                                endDate: createPopupState.editData.endDate
+                            }, popupTitle: 'Creare programare'
+                        })
                     }}
-                    style={{position: 'fixed', bottom: '30px', right: '30px', borderRadius: '8px', backgroundColor: '#2196f3', color: 'white', fontFamily: 'Helvetica', fontSize: '20px'}}
+                    style={{ position: 'fixed', bottom: '30px', right: '30px', borderRadius: '8px', backgroundColor: '#2196f3', color: 'white', fontFamily: 'Helvetica', fontSize: '20px' }}
                 />
-                </div> 
-                
+            </div>
+
+
+
 
         </div>
+    )
 
-        
-        
-       
-        
-    
-        )
+
 }
          
 
