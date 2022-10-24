@@ -13,6 +13,13 @@ class Appointment(models.Model):
     description = models.CharField(max_length=200, blank=True)
     duration_in_minutes = models.IntegerField(default=0)
     price=models.IntegerField(default=0)
+    # procedure type field that has multiple choices for the type of procedure that a doctor can perform with only possible values 
+    # being the ones associated with that doctor
+
+
+
+
+
     
 
     STATUS_PENDING_SENT = "pending_sent"

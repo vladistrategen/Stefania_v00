@@ -97,7 +97,7 @@ function ExtremeCalendar() {
         //console.log(data);
         setDoctors(data);
         setDisplayDoctorData(parseDoctorColorData(data));
-        console.log('displayDoctorData',parseDoctorColorData(data));
+        console.log('displayDoctorData', parseDoctorColorData(data));
     }
     const getPatients = async () => {
         const res = await fetch('/api/patients/');
@@ -110,19 +110,41 @@ function ExtremeCalendar() {
         getAppointments();
         getPatients();
         getDoctors().then(() => {
-            setDataWasFetched(true); 
-            
+            setDataWasFetched(true);
+
         });
     }, []);
-    
+
+    const validateCreatePatientFormData = (data) => {
+        if (data.last_name === "" || data.first_name === "" || data.phone_number === "" || data.birth_date === "") {
+            return false;
+        }
+        return true;
+    }
+
+    const validateCreateAppointmentFormData = (data) => {
+        if (
+            data.startDate === "" ||
+            data.patientId === 0 ||
+            data.doctorId === 0
+        ) {
+            return false;
+        }
+        return true;
+    }
+
     const buttonConfigSave = useMemo(() => {
         return {
             text: "Salveaza",
             type: "success",
             useSubmitBehavior: true,
-            
+
             onClick: async () => {
-                if(formState.editData.id  ){
+                if(!validateCreateAppointmentFormData(formState.editData)){
+                    notify('Eroare! Toate campurile sunt obligatorii', 'error', 3000)
+                    return;
+                }
+                if (formState.editData.id) {
                     // make a put request
                     const requestOptions = {
                         method: 'PUT',
@@ -132,12 +154,12 @@ function ExtremeCalendar() {
                     await fetch(base_url + '/' + formState.editData.id + '/', requestOptions)
                         .then(response => response.json())
                         .then(data => {
-                            
+
                             getAppointments();
-                            dispatch({ popupVisible: false});
+                            dispatch({ popupVisible: false });
                             notify('Programare modificata', 'success', 3000);
                         });
-                }else{
+                } else {
                     const requestOptions = {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
@@ -146,17 +168,20 @@ function ExtremeCalendar() {
                     await fetch(base_url + '/', requestOptions)
                         .then(response => response.json())
                         .then(data => {
-                            console.log("Post request data:",data)
+                            console.log("Post request data:", data)
                             getAppointments();
-                        ;})
-                        .then(setCreatePopupState({...createPopupState,popupVisible:false}))
+                            ;
+                        })
+                        .then(setCreatePopupState({ ...createPopupState, popupVisible: false }))
                         .then(notify('Programare creata', 'success', 3000))
-                        
-                    }   
-                
+
+                }
+
             }
         };
-    } , [,formState,createPopupState]);
+
+
+    }, [, formState, createPopupState]);
 
     const buttonConfigDeleteCancel = useMemo(() => {
         return {
@@ -164,13 +189,13 @@ function ExtremeCalendar() {
             type: "default",
             onClick: () => {
                 dispatch({ popupVisible: false })
-                .then(setConfirmPopupState({ popupVisible: false }));
+                    .then(setConfirmPopupState({ popupVisible: false }));
             }
         };
-    } ,[confirmPopupState]);
+    }, [confirmPopupState]);
 
     const buttonConfigDelete = useMemo(() => {
-        
+
         return {
             text: "Sterge",
             type: "danger",
@@ -183,23 +208,23 @@ function ExtremeCalendar() {
                     .then(() => {
                         window.location.reload();
                     })
-                    .then(notify('Programare stearsa', 'success', 3000))        
+                    .then(notify('Programare stearsa', 'success', 3000))
             }
         };
-    } , [confirmPopupState,formState]);
+    }, [confirmPopupState, formState]);
 
 
     const buttonConfigDeleteConfirm = useMemo(() => {
-        
-        
+
+
         return {
 
             text: "Sterge",
             type: "danger",
-            
+
             useSubmitBehavior: true,
             onClick: async () => {
-                console.log("delete:",formState)
+                console.log("delete:", formState)
                 if (formState.editData.id) {
                     const requestOptions = {
                         method: 'DELETE',
@@ -224,38 +249,44 @@ function ExtremeCalendar() {
             }
 
         };
-    } , [confirmPopupState,formState]);
-    
+    }, [confirmPopupState, formState]);
+
     const buttonConfigCreatePatient = useMemo(() => {
+        // check if all fields are filled
         return {
             text: "Salveaza",
             type: "success",
             useSubmitBehavior: true,
             onClick: async () => {
-                console.log("create patient:",createPatientPopupState)
-                const parsedData={
-                    first_name:createPatientPopupState.editData.first_name,
-                    last_name:createPatientPopupState.editData.last_name,
-                    phone_number:createPatientPopupState.editData.phone_number,
+                if (validateCreatePatientFormData(createPatientPopupState.editData)) {
+                console.log("create patient:", createPatientPopupState)
+                const parsedData = {
+                    first_name: createPatientPopupState.editData.first_name,
+                    last_name: createPatientPopupState.editData.last_name,
+                    phone_number: createPatientPopupState.editData.phone_number,
                     // birth date formatted from mm/dd/yyyy to yyyy-mm-dd
-                    birth_date:createPatientPopupState.editData.birth_date.toISOString().slice(0, 10),
+                    birth_date: createPatientPopupState.editData.birth_date.toISOString().slice(0, 10),
                 }
                 const requestOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
                     body: JSON.stringify(parsedData)
                 };
-                
+
                 await fetch('/api/patients/', requestOptions)
                     .then(response => response.json())
                     .then(data => {
                         getPatients();
-                        setCreatePatientPopupState({...createPatientPopupState,popupVisible:false})
+                        setCreatePatientPopupState({ ...createPatientPopupState, popupVisible: false })
                         notify('Pacient creat', 'success', 3000)
                     })
+                } else {
+                    notify('Eroare! Toate campurile sunt obligatorii', 'error', 3000)
+                }
+
             }
         };
-    } , [createPatientPopupState]);
+    }, [createPatientPopupState]);
 
     function reducer(state, action) {
         return { ...state, ...action };
@@ -591,8 +622,8 @@ function ExtremeCalendar() {
                 appointmentComponent={AppointmentCustom}
                 appointmentTooltipComponent={AppointmentTooltipCustom}
                 onAppointmentFormOpening={onAppointmentFormOpeningc}
-                defaultCurrentView="day"
-                views={['day', 'week',  'Vertical Grouping']}
+                defaultCurrentView="Vertical Grouping"
+                
             >
                 
                 <Resource
@@ -662,6 +693,7 @@ function ExtremeCalendar() {
 
             </Popup>
             <Popup // the popup for creating appointments
+                
                 visible={createPopupState.popupVisible}
 
                 width={500}

@@ -10,6 +10,8 @@ class Doctor(models.Model):
     phone_number = models.CharField(max_length=15)
     # preferred color for the doctor takes a hex value
     preferred_color = models.CharField(max_length=7, default="#FFFFFF")
+    # one to many relationship with DoctorProcedure
+
 
     def __str__(self):
         return self.first_name + " " + self.last_name

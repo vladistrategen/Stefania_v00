@@ -18,7 +18,7 @@ function App() {
       <header className="App-header">
         
         <p>
-          Edit <code>src/App.js</code> yodsdada
+          Calendar programari
         </p>
         
         
