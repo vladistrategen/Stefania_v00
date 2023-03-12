@@ -9,9 +9,14 @@ Is intented to be used by a clinic in Bucharest who needed a better way to view 
 Built using:
     Django, MySQL, The Django REST Framework and React
 
+![dragndrop](https://user-images.githubusercontent.com/100209446/224561891-908e0da9-ff21-43f0-a919-73b93338d665.png)
+
+![editappointmentshowcase](https://user-images.githubusercontent.com/100209446/224561901-64a19255-31fc-4882-8559-263ec63c2f79.png)
+
+![createappointmentshowcase](https://user-images.githubusercontent.com/100209446/224561919-83d5b8c3-974e-4664-ab5d-e2bf41dd6b66.png)
 
 
-## Prerequisites
+## Prerequisites for running the project
 First make sure you install **NPM**, **Python**, **Pip** and **MySQL**
 
 Check the following commands
