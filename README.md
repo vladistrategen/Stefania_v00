@@ -56,7 +56,7 @@ _Step by step guide on installing the project on a machine_
 
     ```$ pipenv shell```
 
-    ```$ pipenv install -r requirements.txt```
+    ```$ pip install -r requirements.txt```
 
 * Install npm packages
     
