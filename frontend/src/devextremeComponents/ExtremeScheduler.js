@@ -68,41 +68,32 @@ function ExtremeCalendar() {
     const [createPopupState, setCreatePopupState] = useState(initialFormState);
     const [createPatientPopupState, setCreatePatientPopupState] = useState(initialCreatePatientFormState);
     const [csrftoken, setCsrfToken] = useState('');
-    
-
-
-
 
     const getCsrfToken = async () => {
-        // get the token from the cookie list
         const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
         if (token) {
             setCsrfToken(token.split('=')[1]);
         }
-        //console.log('token', token);
     }
-
 
     const getAppointments = async () => {
         const res = await fetch('/api/appointments/');
         const data = await res.json();
         const parsedData = parseDataMultiple(data);
-        //console.log('data:',data)
-        //console.log('parsedData:',parsedData)
         setAppointments(parsedData);
     }
+
     const getDoctors = async () => {
         const res = await fetch('/api/doctors/');
         const data = await res.json();
-        //console.log(data);
         setDoctors(data);
         setDisplayDoctorData(parseDoctorColorData(data));
         console.log('displayDoctorData', parseDoctorColorData(data));
     }
+
     const getPatients = async () => {
         const res = await fetch('/api/patients/');
         const data = await res.json();
-        //console.log(data);
         setPatients(data);
     }
     useEffect(() => {
@@ -145,7 +136,6 @@ function ExtremeCalendar() {
                     return;
                 }
                 if (formState.editData.id) {
-                    // make a put request
                     const requestOptions = {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
@@ -215,8 +205,6 @@ function ExtremeCalendar() {
 
 
     const buttonConfigDeleteConfirm = useMemo(() => {
-
-
         return {
 
             text: "Sterge",
@@ -292,7 +280,6 @@ function ExtremeCalendar() {
         return { ...state, ...action };
     }
     
-    
     const doctorDisplayExpr = (item) => {
         if(item!=null){
             return "Dr. " + item.last_name + " " + item.first_name;
@@ -307,7 +294,6 @@ function ExtremeCalendar() {
 
     function CustomAppointmentFormRender()  {
 
-        
         const onDoctorChange = (e) => {
             dispatch({editData: {...formState.editData, doctorId: e.value}});
         }
@@ -495,7 +481,6 @@ function ExtremeCalendar() {
             setCreatePatientPopupState({ ...createPatientPopupState, editData: { ...createPatientPopupState.editData, last_name: e.value } })
         }
 
-
         return (
             <div>
                 <ScrollView width="100%" height="100%">
@@ -580,19 +565,6 @@ function ExtremeCalendar() {
 
     }
     
-
-    /*const AddPatientButton = () => {
-        return (
-            <Button
-                text="Adauga pacient"
-                type="default"
-
-                onClick={() => {
-                }}
-            />
-        );
-    }*/
-
     const editingoptions = {
         allowAdding: true,
       allowDeleting: true,
@@ -601,13 +573,9 @@ function ExtremeCalendar() {
       allowUpdating: true,
     };
     
-    //console.log(doctors)
-    //console.log(patients)
     function onHiding(e) {
         dispatch( {popupVisible: false });
-        //console.log(formState);
     }
-    
     
     if(dataWasFetched===false)
         return <div><h1>Loading...</h1></div>
@@ -623,8 +591,7 @@ function ExtremeCalendar() {
                 appointmentTooltipComponent={AppointmentTooltipCustom}
                 onAppointmentFormOpening={onAppointmentFormOpeningc}
                 defaultCurrentView="Vertical Grouping"
-                
-            >
+                >
                 
                 <Resource
                     fieldExpr='doctorId'
@@ -711,7 +678,7 @@ function ExtremeCalendar() {
             <Popup /* the popup for adding patients */
                 visible={createPatientPopupState.popupVisible}
                 width={500}
-                closeOnOutsideClick={false}
+                hideOnOutsideClick={false}
                 onHiding={() => setCreatePatientPopupState({ ...initialCreatePatientFormState })}
                 title={'Adauga Pacient'}
                 contentRender={CustomCreatePatientForm} >
@@ -719,23 +686,19 @@ function ExtremeCalendar() {
                 <ToolbarItem // the save button
                     widget={'dxButton'}
                     toolbar={'bottom'}
-                    location={'after'} />
+                    location={'after'} 
+                />
 
                 <ToolbarItem // add patient button located on the lower middle part of the popup
                     widget={'dxButton'}
                     toolbar={'bottom'}
                     location={'center'}
-                    options={buttonConfigCreatePatient} />
-
-
+                    options={buttonConfigCreatePatient}
+                />
 
             </Popup>
 
-
-
-
             <div>
-
                 <Button
                     className='btn btn-primary'
                     text="Adauga pacient"
@@ -753,13 +716,8 @@ function ExtremeCalendar() {
                     style={{ position: 'fixed', bottom: '30px', right: '30px', borderRadius: '8px', backgroundColor: '#2196f3', color: 'white', fontFamily: 'Helvetica', fontSize: '20px' }}
                 />
             </div>
-
-
-
-
         </div>
     )
-
 
 }
          
