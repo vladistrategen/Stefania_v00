@@ -51,10 +51,19 @@ _Step by step guide on installing the project on a machine_
 * Create the virtual enviroment
 
     ```$ pip install pipenv```
+  
+    ```$ python -m venv myenv```
+
+  Then activate the virtual enviroment using your preferred method.
+  Using VSCode with the git bash terminal you can use the command:
+
+    ```$ source myenv/Scrips/Activate```
+
+  Or using windows Powershell:
+
+    ```C:\> myenv\Scripts\activate```
 
 * Install dependencies
-
-    ```$ pipenv shell```
 
     ```$ pip install -r requirements.txt```
 

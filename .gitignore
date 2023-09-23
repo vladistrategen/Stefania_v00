@@ -5,3 +5,6 @@ stf.session.sql
 **/__pycache__/
 */migrations/__pycache__
 __pycache__
+stefaniaenv/
+env/
+.env
