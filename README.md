@@ -89,17 +89,25 @@ _Step by step guide on installing the project on a machine_
 
     ```$ python manage.py runserver```
 
-## Database
+## Database Setup
 
-The guide above assumes the database already exists and has been correctly configured
+The guide above assumes that a database already exists and has been configured correctly. However, this might not always be the case. Follow the guide below to set up your database quickly.
 
-That most likely won't be the case, so I'll provide this guide for quickly setting that up
+* First, create the database. You can do this using the MySQL/MariaDB CLI or any other database management tool of your choice.
 
-* First configure the 'DATABASES' in ```settings.py``` with the desired database nameand your mysql user & password
+    ```shell
+    CREATE DATABASE dbname;
+    ```
 
-* Next create the database by using the mysql CLI
+* Next, create a `db.env` file in the root directory of the project. Populate this file with your MySQL/MariaDB credentials, URL, and port. Below is an example of how this file might look:
 
-    ```$ CREATE DATABASE dbname```
+    ```env
+    PROGRAMARI_DB_NAME=dbname
+    PROGRAMARI_DB_USER=your_username
+    PROGRAMARI_DB_PASSWORD=your_password
+    PROGRAMARI_DB_HOST=127.0.0.1
+    PROGRAMARI_DB_PORT=3306
+    ```
 
 * Now migrate the changes in django
 
