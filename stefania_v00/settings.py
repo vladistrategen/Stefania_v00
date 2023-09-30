@@ -11,12 +11,16 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os
+import environ
 from pathlib import Path
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Initialize environment variables
+env = environ.Env()
+env_file = BASE_DIR / 'db.env'  # Assumes that db.env is in the project's base directory
+env.read_env(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -38,8 +42,6 @@ INSTALLED_APPS = [
     'frontend',
     'doctors',
     'procedure',
-    'doctor_procedure',
-    'appointment_procedure',
     'appointment',
     'filter',
     'users',
@@ -92,15 +94,14 @@ WSGI_APPLICATION = 'stefania_v00.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {  
         'default': {  
             'ENGINE': 'django.db.backends.mysql',  
-            'NAME': config('PROGRAMARI_DB_NAME'),  
-            'USER': config('PROGRAMARI_DB_USER'),  
-            'PASSWORD': config('PROGRAMARI_DB_PASSWORD'),  
-            'HOST': config('PROGRAMARI_DB_HOST'),  
-            'PORT': config('PROGRAMARI_DB_PORT'),  
+            'NAME': env('PROGRAMARI_DB_NAME'),  
+            'USER': env('PROGRAMARI_DB_USER'),  
+            'PASSWORD': env('PROGRAMARI_DB_PASSWORD'),  
+            'HOST': env('PROGRAMARI_DB_HOST'),  
+            'PORT': env('PROGRAMARI_DB_PORT'),  
             'OPTIONS': {  
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
             }  

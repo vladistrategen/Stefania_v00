@@ -22,6 +22,7 @@
                 "sha256:4a29362a6acebe09bf1d6640db38c1dc3d9217c68e6f9f6204d72667fc19a424"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==3.5.2"
         },
         "django": {
@@ -30,6 +31,7 @@
                 "sha256:f2f431e75adc40039ace496ad3b9f17227022e8b11566f4b363da44c7e44761e"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==4.1.7"
         },
         "django-cors-headers": {
@@ -38,6 +40,7 @@
                 "sha256:f9dc6b4e3f611c3199700b3e5f3398c28757dcd559c2f82932687f3d0443cfdf"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==3.13.0"
         },
         "django-crontab": {
@@ -53,6 +56,7 @@
                 "sha256:ed473b76e84f7e83b2511bb2050c3efb36d135207d0128dfe3ae4b36e3594ba5"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==22.1"
         },
         "djangorestframework": {
@@ -61,6 +65,7 @@
                 "sha256:eb63f58c9f218e1a7d064d17a70751f528ed4e1d35547fdade9aaf4cd103fd08"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.6'",
             "version": "==3.14.0"
         },
         "markdown": {
@@ -69,6 +74,7 @@
                 "sha256:3b809086bb6efad416156e00a0da66fe47618a5d6918dd688f53f40c8e4cfeff"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==3.4.1"
         },
         "mysqlclient": {
@@ -82,6 +88,7 @@
                 "sha256:dea88c8d3f5a5d9293dfe7f087c16dd350ceb175f2f6631c9cf4caf3e19b7a96"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.5'",
             "version": "==2.1.1"
         },
         "pytz": {
@@ -98,6 +105,7 @@
                 "sha256:69ca804846bb114d2ec380e4360a8a340db83f0ccf3afceeb1404df028f57268"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.5'",
             "version": "==0.4.3"
         },
         "tzdata": {
@@ -106,6 +114,7 @@
                 "sha256:ada9133fbd561e6ec3d1674d3fba50251636e918aa97bd59d63735bef5a513bb"
             ],
             "index": "pypi",
+            "markers": "python_version >= '2'",
             "version": "==2022.4"
         }
     },
