@@ -142,7 +142,7 @@ export default class Demo extends React.PureComponent {
               data: result,
           });
         }
-      ).then(console.log(this.state.data.doctor));
+      );
   }       
 
 

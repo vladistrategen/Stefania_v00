@@ -1,6 +1,8 @@
 import ExtremeCalendar from './devextremeComponents/ExtremeScheduler';
 import './App.css';
-import React,{ useEffect } from 'react';
+import React from 'react';
+import { AppointmentCalendarProvider } from './devextremeComponents/AppointmentCalendarProvider';
+import AppointmentCalendar from './devextremeComponents/AppointmentCalendar';
 function App() {
   return (
     <div className="App">
@@ -8,7 +10,9 @@ function App() {
         <p>
           Calendar programari
         </p>
-      <ExtremeCalendar/>
+        <AppointmentCalendarProvider>
+          <AppointmentCalendar />
+        </AppointmentCalendarProvider>
       </header>
     </div>
   );

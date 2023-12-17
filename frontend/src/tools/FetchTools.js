@@ -1,10 +1,5 @@
-import React, {useState,useEffect} from "react";
-
-
-// define a function to parse the data from the server and return an array of appointments as json objects
 const  parseDataMultiple = (data) => {
     let parsedData = [];
-    
    
     for (let i = 0; i < data.length; i++) {
         const parsedStartDate=new Date(data[i].date+"T"+data[i].time+".000Z");
@@ -59,39 +54,7 @@ const parseForRequest = (data) => {
     "patient": data.patientId
     }
 }
-            
-/*
-const Fetchtest = () => {
-    const [appointments, setAppointments] = useState([]);
-    useEffect(() => {
-        getAppointments()
-    }, []);
-    
-    let getAppointments = async () => {
-        const res = await fetch('http://127.0.0.1:8000/api/appointments');
-        const data = await res.json();
-        
-        const parsedData = parseDataMultiple(data);
-        //console.log(parsedData);
-        setAppointments(parsedData);
-
-    }
-    
-    return (
-        <div>
-            {appointments.map(appointment => (
-                <div key={appointment.id}>
-                    {appointment.title}
-                </div>
-            ))}
-        </div>
-    );
-
-
-}*/
-
-// make a function to fetch the data from the server, with request options, appointment id, and url as parameters
-
+ 
 const makeRequest = async (options, id, url) => {
     const res = await fetch(url + '/' + id + '/',  options);
     const data = await res.json();
@@ -109,4 +72,20 @@ const parseDoctorColorData = (data) => {
     }
     return parsedData;
 }
-export {parseDataMultiple,parseDataSingle,parseForRequest,makeRequest,parseDoctorColorData};
+
+const base_url = '/api/appointments';
+
+const getCsrfToken = () => {
+    const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+    if (token) {
+        return token.split('=')[1];
+    }
+}
+
+const getMinutes = (startDate, endDate) => {
+    const d1 = new Date(startDate);
+    const d2 = new Date(endDate);
+    return parseInt((d2.getTime() - d1.getTime()) / 60000);
+}
+
+export {parseDataMultiple,parseDataSingle,parseForRequest,makeRequest,parseDoctorColorData, base_url, getCsrfToken, getMinutes};
