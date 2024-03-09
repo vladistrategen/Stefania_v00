@@ -14,8 +14,6 @@ const AppointmentForm = ({ data }) => {
 
     const doctors = /*appointmentsState.doctors || */ doctorsTempData;
     const patients = /* appointmentsState.patients || */ patientsTempData;
-    console.log("doctors", doctors);
-    console.log("patients", patients);
 
     const [createAppointmentFormState, setFormState] = useState(formState);
 
@@ -54,8 +52,5 @@ const AppointmentForm = ({ data }) => {
         </Popup>
     );
 };
-
-
-
 
 export default AppointmentForm;
